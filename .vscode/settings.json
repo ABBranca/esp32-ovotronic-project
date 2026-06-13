@@ -5,7 +5,13 @@
   "clangd.arguments": [
     "--background-index",
     "--query-driver=**",
-    "--compile-commands-dir=/home/ale/Documents/Uni/Corsi/PSM/temp/Ovotronic/build"
+    "--compile-commands-dir=/home/ale/Documents/Uni/Corsi/PSM/esp32-ovotronic-project/build"
   ],
-  "idf.currentSetup": "/home/ale/.espressif/v6.0.1/esp-idf"
+  "idf.currentSetup": "/home/ale/.espressif/v6.0.1/esp-idf",
+  "idf.openOcdConfigs": [
+    "board/esp32s3-builtin.cfg"
+  ],
+  "idf.customExtraVars": {
+    "IDF_TARGET": "esp32s3"
+  }
 }
