@@ -1,0 +1,11 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.extensionActivationMode": "always",
+  "clangd.path": "/home/ale/.espressif/tools/esp-clang/esp-20.1.1_20250829/esp-clang/bin/clangd",
+  "clangd.arguments": [
+    "--background-index",
+    "--query-driver=**",
+    "--compile-commands-dir=/home/ale/Documents/Uni/Corsi/PSM/temp/Ovotronic/build"
+  ],
+  "idf.currentSetup": "/home/ale/.espressif/v6.0.1/esp-idf"
+}
