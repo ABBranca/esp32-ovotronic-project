@@ -6,8 +6,8 @@
     {
       "type": "wokwi-breadboard",
       "id": "bb1",
-      "top": 25.8,
-      "left": 271.6,
+      "top": -3,
+      "left": 281.2,
       "attrs": {}
     },
     {
@@ -32,6 +32,15 @@
       "top": 150,
       "left": 300,
       "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text2",
+      "top": 220.8,
+      "left": 172.8,
+      "attrs": {
+        "text": "GND"
+      }
     }
   ],
   "connections": [
@@ -46,6 +55,14 @@
       "$serialMonitor:TX",
       "",
       []
+    ],
+    [
+      "bb1:bn.1",
+      "esp:GND.3",
+      "green",
+      [
+        "v0"
+      ]
     ]
   ],
   "dependencies": {}
