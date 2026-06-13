@@ -1,0 +1,51 @@
+---
+# Abilita i controlli principali per bug, performance, leggibilità e modernizzazione
+Checks: >
+  -*,
+  bugprone-*,
+  cert-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  -cppcoreguidelines-owning-memory,
+  -readability-braces-around-statements,
+  -readability-implicit-bool-conversion
+
+# Applica le correzioni suggerite in modo automatico quando possibile
+WarningsAsErrors: ''
+
+HeaderFilterRegex: '.*'
+
+# Configurazione dettagliata delle opzioni dei controlli
+CheckOptions:
+  # Stile dei nomi: CamelCase per le classi, camelBack per le variabili, snake_case per le funzioni
+  - key:             readability-identifier-naming.ClassCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.VariableCase
+    value:           camelBack
+  - key:             readability-identifier-naming.FunctionCase
+    value:           camelBack
+  - key:             readability-identifier-naming.ParameterCase
+    value:           camelBack
+  - key:             readability-identifier-naming.NamespaceCase
+    value:           lower_case
+  - key:             readability-identifier-naming.GlobalConstantCase
+    value:           UPPER_CASE
+
+  # Forza l'uso di smart pointers ed evita macro ereditate dal C
+  - key:             modernize-replace-auto-ptr.IncludeStyle
+    value:           llvm
+  - key:             modernize-make-unique.MakeSmartPtrFunction
+    value:           std::make_unique
+  - key:             modernize-make-shared.MakeSmartPtrFunction
+    value:           std::make_shared
+
+  # Complessità e limiti cognitivi del codice
+  - key:             readability-function-size.LineThreshold
+    value:           80
+
+  # Parametri passati per valore che dovrebbero essere passati per const-ref
+  - key:             performance-unnecessary-value-param.AllowedTypes
+    value:           ''
+...

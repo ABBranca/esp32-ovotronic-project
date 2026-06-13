@@ -1,0 +1,18 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Genera Wokwi TOML",
+            "type": "shell",
+            "command": "node -e \"const fs = require('fs'); if (!fs.existsSync('wokwi.toml')) fs.writeFileSync('wokwi.toml', '[wokwi]\\nversion = 1\\nfirmware = \\'build/Project.bin\\'\\nelf = \\'build/Project.elf\\'\\ngdbServerPort = 3333\\n');\"",
+            "windows": {
+                "command": "powershell -Command \"if (-not (Test-Path 'wokwi.toml')) { Set-Content -Path 'wokwi.toml' -Value '[wokwi]','version = 1','firmware = ''build/Project.bin''','elf = ''build/Project.elf''','gdbServerPort = 3333' }\""
+            },
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        }
+    ]
+}
