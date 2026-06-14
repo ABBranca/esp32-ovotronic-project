@@ -3,3 +3,8 @@ version = 1
 firmware = 'build/Ovotronic.bin'
 elf = 'build/Ovotronic.elf'
 gdbServerPort = 3333
+
+
+[[chip]]
+name = 'drv8870'
+binary = 'chips/drv8870.chip.wasm'

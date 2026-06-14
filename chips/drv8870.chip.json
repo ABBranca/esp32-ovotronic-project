@@ -1,0 +1,14 @@
+{
+    "name": "drv8870",
+    "author": "Alessandro Biagio Branca",
+    "pins": [
+        "GND",
+        "IN2",
+        "IN1",
+        "VREF",
+        "VM",
+        "OUT1",
+        "OUT2",
+        "ISEN"
+    ]
+}

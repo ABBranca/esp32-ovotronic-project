@@ -41,6 +41,13 @@
       "attrs": {
         "text": "GND"
       }
+    },
+    {
+      "type": "chip-drv8870",
+      "id": "chip1",
+      "top": -162.18,
+      "left": 254.4,
+      "attrs": {}
     }
   ],
   "connections": [
@@ -59,7 +66,7 @@
     [
       "bb1:bn.1",
       "esp:GND.3",
-      "green",
+      "black",
       [
         "v0"
       ]

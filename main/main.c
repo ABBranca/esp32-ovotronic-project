@@ -4,10 +4,12 @@
 /*
 README: Codice per l'implementazione di ESP32-S3 nel progetto Ovotronic.
 
+XXX: Best Practices:
+
 - Dichiarare sempre le funzioni in file ".c" separati e poi includere gli
 header.
 
-- Usare sempre funzioni di RTOS per la creazione dei Task.
+- Usare sempre funzioni di freeRTOS per la creazione dei Task.
 
 - I nomi delle variabili devono essere il più chiari possibile.
 
@@ -20,8 +22,9 @@ void app_main(void) {
   passi del processo.
   */
 
-  // [ ]: Ovotronic resetta la posizione verticale della padella, assicurandosi
-  // che sia nella posizione più bassa tramite sensore fine corsa.
+  // [ ]: Ovotronic resetta la posizione verticale della padella,
+  // assicurandosi che sia nella posizione più bassa tramite sensore fine
+  // corsa.
 
   // [ ]: L'utente seleziona il tipo di preparazione tra Uova Strapazzate e
   // Frittata e prosegue
@@ -32,8 +35,9 @@ void app_main(void) {
   // grammi di supplementi da aggiungere all'imbuto superiore per il numero di
   // uova selezionate e attende il segnale di avvio da parte dell'utente.
 
-  // [ ]: Dopo il via libera dell'utente, Ovotronic rompe le uova e convoglia i
-  // supplementi nella padella tramite attuazione del servomotore SG90 dedicato.
+  // [ ]: Dopo il via libera dell'utente, Ovotronic rompe le uova e convoglia
+  // i supplementi nella padella tramite attuazione del servomotore SG90
+  // dedicato.
 
   // [ ]: La padella si alza fino a fine corsa.
 
@@ -56,5 +60,4 @@ void app_main(void) {
 
   // [ ]: Il sistema notifica l'utente della fine del processo tramite un
   // cicalino.
-
 };
