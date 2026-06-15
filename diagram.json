@@ -66,6 +66,27 @@
       "top": 135.16,
       "left": 182.4,
       "attrs": {}
+    },
+    {
+      "type": "wokwi-vcc",
+      "id": "vcc3",
+      "top": -287.24,
+      "left": 1027.2,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "servo1",
+      "top": -242,
+      "left": 1238.4,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "servo2",
+      "top": -117.2,
+      "left": 1238.4,
+      "attrs": {}
     }
   ],
   "connections": [
@@ -146,6 +167,38 @@
       "red",
       [
         "v0"
+      ]
+    ],
+    [
+      "vcc3:VCC",
+      "servo1:V+",
+      "red",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "vcc3:VCC",
+      "servo2:V+",
+      "red",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "servo1:GND",
+      "bb1:tn.41",
+      "black",
+      [
+        "h0"
+      ]
+    ],
+    [
+      "servo2:GND",
+      "bb1:tn.45",
+      "black",
+      [
+        "h0"
       ]
     ]
   ],
