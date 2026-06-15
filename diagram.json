@@ -4,30 +4,12 @@
   "editor": "wokwi",
   "parts": [
     {
-      "type": "wokwi-breadboard",
-      "id": "bb1",
-      "top": 6.6,
-      "left": 281.2,
-      "attrs": {
-        "color": "#eeefed"
-      }
-    },
-    {
       "type": "board-esp32-s3-devkitc-1",
       "id": "esp",
       "top": 9.42,
       "left": -91.43,
       "attrs": {
         "builder": "esp-idf"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "text2",
-      "top": 240,
-      "left": 134.4,
-      "attrs": {
-        "text": "GND"
       }
     },
     {
@@ -40,52 +22,109 @@
     {
       "type": "chip-drv8870",
       "id": "chip2",
-      "top": 269.82,
-      "left": 974.4,
+      "top": -296.58,
+      "left": 456,
       "attrs": {}
     },
     {
       "type": "wokwi-lcd1602",
       "id": "lcd1",
-      "top": 304,
-      "left": 437.6,
+      "top": 390.4,
+      "left": -176.8,
       "attrs": {
         "pins": "i2c"
       }
     },
     {
       "type": "wokwi-vcc",
-      "id": "vcc1",
-      "top": -76.04,
-      "left": 220.8,
-      "attrs": {}
-    },
-    {
-      "type": "wokwi-vcc",
-      "id": "vcc2",
-      "top": 135.16,
-      "left": 182.4,
-      "attrs": {}
-    },
-    {
-      "type": "wokwi-vcc",
       "id": "vcc3",
-      "top": -287.24,
-      "left": 1027.2,
+      "top": -18.44,
+      "left": 422.4,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-ky-040",
+      "id": "encoder1",
+      "top": 426.2,
+      "left": 141.9,
+      "rotate": 270,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-gnd",
+      "id": "gnd1",
+      "top": 96,
+      "left": 469.8,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-gnd",
+      "id": "gnd2",
+      "top": 220.8,
+      "left": 469.8,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-gnd",
+      "id": "gnd3",
+      "top": 259.2,
+      "left": 57,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-gnd",
+      "id": "gnd4",
+      "top": -249.6,
+      "left": 325.8,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-gnd",
+      "id": "gnd5",
+      "top": -124.8,
+      "left": 325.8,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-gnd",
+      "id": "gnd6",
+      "top": 460.8,
+      "left": -269.4,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-vcc",
+      "id": "vcc4",
+      "top": 336.76,
+      "left": -220.8,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-gnd",
+      "id": "gnd7",
+      "top": 441.6,
+      "left": 297,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-vcc",
+      "id": "vcc5",
+      "top": 279.16,
+      "left": 192,
       "attrs": {}
     },
     {
       "type": "wokwi-servo",
       "id": "servo1",
-      "top": -242,
-      "left": 1238.4,
+      "top": 132.4,
+      "left": 556.8,
       "attrs": {}
     },
     {
       "type": "wokwi-servo",
       "id": "servo2",
-      "top": -117.2,
-      "left": 1238.4,
+      "top": 7.6,
+      "left": 556.8,
       "attrs": {}
     }
   ],
@@ -103,78 +142,76 @@
       []
     ],
     [
-      "chip2:VREF",
-      "bb1:bn.37",
+      "esp:GND.4",
+      "gnd3:GND",
       "black",
       [
-        "h-96",
-        "v-57.6",
-        "h-143.2"
+        "h0"
+      ]
+    ],
+    [
+      "chip2:GND",
+      "gnd4:GND",
+      "black",
+      [
+        "h0"
+      ]
+    ],
+    [
+      "chip1:GND",
+      "gnd5:GND",
+      "black",
+      [
+        "h0"
       ]
     ],
     [
       "lcd1:GND",
-      "bb1:bn.6",
+      "gnd6:GND",
       "black",
       [
         "h0"
       ]
     ],
     [
-      "bb1:tn.6",
-      "chip1:GND",
-      "black",
-      [
-        "v0"
-      ]
-    ],
-    [
-      "vcc1:VCC",
-      "bb1:tp.1",
-      "red",
-      [
-        "v0"
-      ]
-    ],
-    [
-      "vcc2:VCC",
-      "bb1:bp.1",
-      "red",
-      [
-        "v0"
-      ]
-    ],
-    [
-      "esp:GND.3",
-      "bb1:tn.1",
-      "black",
-      [
-        "h134.4",
-        "v-201.5"
-      ]
-    ],
-    [
-      "esp:GND.4",
-      "bb1:bn.1",
-      "black",
-      [
-        "h0"
-      ]
-    ],
-    [
-      "bb1:bp.4",
       "lcd1:VCC",
+      "vcc4:VCC",
+      "red",
+      [
+        "h0"
+      ]
+    ],
+    [
+      "encoder1:GND",
+      "gnd7:GND",
+      "black",
+      [
+        "v-57.6",
+        "h96.8"
+      ]
+    ],
+    [
+      "encoder1:VCC",
+      "vcc5:VCC",
       "red",
       [
         "v0"
       ]
     ],
     [
-      "vcc3:VCC",
-      "servo1:V+",
-      "red",
+      "servo2:GND",
+      "gnd1:GND",
+      "black",
       [
-        "v0"
+        "h0"
+      ]
+    ],
+    [
+      "servo1:GND",
+      "gnd2:GND",
+      "black",
+      [
+        "h0"
       ]
     ],
     [
@@ -186,19 +223,11 @@
       ]
     ],
     [
-      "servo1:GND",
-      "bb1:tn.41",
-      "black",
+      "vcc3:VCC",
+      "servo1:V+",
+      "red",
       [
-        "h0"
-      ]
-    ],
-    [
-      "servo2:GND",
-      "bb1:tn.45",
-      "black",
-      [
-        "h0"
+        "v0"
       ]
     ]
   ],
