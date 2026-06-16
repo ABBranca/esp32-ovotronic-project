@@ -1,4 +1,6 @@
 #include "i2c_bus.h"
+#include "lcd1602.h"
+#include "tmp102q1.h"
 
 /*
 README: Codice per l'implementazione di ESP32-S3 nel progetto Ovotronic.
@@ -22,6 +24,11 @@ void app_main(void) {
   programma e poi lo avvia. Di seguito sono riportati in pseudo-codice i
   passi del processo.
   */
+
+  // Setup
+  i2c_init();               // Inizializza bus per comunicazione I2C
+  tmp102_init(bus_handle);  // Inizializza I2C sensore di temperatura
+  lcd1602_init(bus_handle); // Inizializza schermo LCD1602
 
   // [ ]: Ovotronic resetta la posizione verticale della padella,
   // assicurandosi che sia nella posizione più bassa tramite sensore fine

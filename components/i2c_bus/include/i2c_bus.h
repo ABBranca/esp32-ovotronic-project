@@ -7,5 +7,6 @@
 #define I2C_PORT 0
 
 extern i2c_master_bus_config_t i2c_mst_cfg;
-
 extern i2c_master_bus_handle_t bus_handle;
+
+esp_err_t i2c_init();
