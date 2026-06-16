@@ -1,0 +1,22 @@
+{
+    "name": "tmp102",
+    "author": "Alessandro Biagio Branca",
+    "pins": [
+        "VCC",
+        "GND",
+        "SDA",
+        "SCL",
+        "ADD0",
+        "ALERT"
+    ],
+    "controls": [
+        {
+            "id": "temperature",
+            "label": "Temperature (°C)",
+            "type": "range",
+            "min": -40,
+            "max": 125,
+            "step": 0.0625
+        }
+    ]
+}

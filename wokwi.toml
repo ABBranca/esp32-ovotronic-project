@@ -8,3 +8,7 @@ gdbServerPort = 3333
 [[chip]]
 name = 'drv8870'
 binary = 'chips/drv8870.chip.wasm'
+
+[[chip]]
+name = 'tmp102'
+binary = 'chips/tmp102.chip.wasm'
