@@ -73,3 +73,18 @@ esp_err_t lcd1602_init(i2c_master_bus_handle_t bus) {
 
   return ESP_OK;
 }
+
+esp_err_t lcd1602_print(const char *str) {
+  for (uint8_t i = 0; str[i] != '\0'; i++) {
+    lcd_send_byte(str[i], LCD_RS);
+  }
+  return ESP_OK;
+}
+
+esp_err_t lcd1602_set_cursor(uint8_t row, uint8_t col) {
+
+  uint8_t addr = col + (row == 0 ? 0x00 : 0x40);
+  lcd_send_byte(0x80 | addr, 0);
+
+  return ESP_OK;
+}

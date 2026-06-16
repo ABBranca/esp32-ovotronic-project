@@ -30,6 +30,9 @@ void app_main(void) {
   tmp102_init(bus_handle);  // Inizializza I2C sensore di temperatura
   lcd1602_init(bus_handle); // Inizializza schermo LCD1602
 
+  lcd1602_set_cursor(0, 0);
+  lcd1602_print("Ovotronic");
+
   // [ ]: Ovotronic resetta la posizione verticale della padella,
   // assicurandosi che sia nella posizione più bassa tramite sensore fine
   // corsa.
