@@ -1,5 +1,4 @@
-#include "freertos/idf_additions.h"
-#include <stdio.h>
+#include "i2c_bus.h"
 
 /*
 README: Codice per l'implementazione di ESP32-S3 nel progetto Ovotronic.
@@ -14,6 +13,8 @@ header.
 - I nomi delle variabili devono essere il più chiari possibile.
 
 */
+
+// Pin Definitions
 
 void app_main(void) {
   /*
