@@ -1,7 +1,8 @@
-#include "freertos/idf_additions.h"
+#include "hal/ledc_types.h"
 #include "i2c_bus.h"
 #include "lcd1602.h"
-#include "portmacro.h"
+#include "sg90.h"
+#include "soc/gpio_num.h"
 #include "tmp102q1.h"
 
 /*
@@ -18,7 +19,10 @@ header.
 
 */
 
-// Pin Definitions
+static const ledc_channel_t ds_sg90_channel = LEDC_CHANNEL_0;
+static const ledc_channel_t eb_sg90_channel = LEDC_CHANNEL_1;
+static const gpio_num_t ds_sg90_gpio = 2;
+static const gpio_num_t eb_sg90_gpio = 47;
 
 void app_main(void) {
   /*
@@ -39,6 +43,14 @@ void app_main(void) {
 
   tmp102_read_temperature(&temperatura);
   printf("Temperatura: %f\n", temperatura);
+
+  sg90_timer_init();
+
+  sg90_channel_init(ds_sg90_channel,
+                    ds_sg90_gpio); // Inizializzo canale sg90 per supplementi
+
+  sg90_channel_init(eb_sg90_channel,
+                    eb_sg90_gpio); // Inizializzo canale sg90 per supplementi
 
   // [ ]: Ovotronic resetta la posizione verticale della padella,
   // assicurandosi che sia nella posizione più bassa tramite sensore fine
