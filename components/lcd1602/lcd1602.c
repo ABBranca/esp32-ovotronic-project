@@ -88,3 +88,9 @@ esp_err_t lcd1602_set_cursor(uint8_t row, uint8_t col) {
 
   return ESP_OK;
 }
+
+esp_err_t lcd1602_clear() {
+  lcd_send_byte(0x01, 0);
+  vTaskDelay(20 / portTICK_PERIOD_MS);
+  return ESP_OK;
+}

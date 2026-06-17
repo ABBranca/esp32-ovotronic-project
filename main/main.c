@@ -1,5 +1,7 @@
+#include "freertos/idf_additions.h"
 #include "i2c_bus.h"
 #include "lcd1602.h"
+#include "portmacro.h"
 #include "tmp102q1.h"
 
 /*
@@ -30,8 +32,13 @@ void app_main(void) {
   tmp102_init(bus_handle);  // Inizializza I2C sensore di temperatura
   lcd1602_init(bus_handle); // Inizializza schermo LCD1602
 
-  lcd1602_set_cursor(0, 0);
-  lcd1602_print("Ovotronic");
+  lcd1602_set_cursor(0, 3);
+  lcd1602_print("OVOTRONIC");
+
+  float temperatura;
+
+  tmp102_read_temperature(&temperatura);
+  printf("Temperatura: %f\n", temperatura);
 
   // [ ]: Ovotronic resetta la posizione verticale della padella,
   // assicurandosi che sia nella posizione più bassa tramite sensore fine

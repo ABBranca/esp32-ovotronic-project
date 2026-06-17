@@ -16,3 +16,4 @@ extern i2c_master_dev_handle_t lcd1602_handle;
 esp_err_t lcd1602_init(i2c_master_bus_handle_t bus);
 esp_err_t lcd1602_print(const char *str);
 esp_err_t lcd1602_set_cursor(uint8_t row, uint8_t col);
+esp_err_t lcd1602_clear();
