@@ -39,18 +39,13 @@ void app_main(void) {
   lcd1602_set_cursor(0, 3);
   lcd1602_print("OVOTRONIC");
 
-  float temperatura;
-
-  tmp102_read_temperature(&temperatura);
-  printf("Temperatura: %f\n", temperatura);
-
-  sg90_timer_init();
+  sg90_timer_init(); // Inizializzazione Servo SG90
 
   sg90_channel_init(ds_sg90_channel,
                     ds_sg90_gpio); // Inizializzo canale sg90 per supplementi
 
   sg90_channel_init(eb_sg90_channel,
-                    eb_sg90_gpio); // Inizializzo canale sg90 per supplementi
+                    eb_sg90_gpio); // Inizializzo canale sg90 per egg breaker
 
   // [ ]: Ovotronic resetta la posizione verticale della padella,
   // assicurandosi che sia nella posizione più bassa tramite sensore fine

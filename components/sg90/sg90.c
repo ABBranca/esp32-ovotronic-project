@@ -54,8 +54,14 @@ esp_err_t sg90_set_angle(const ledc_channel_t channel, float angle) {
       angle / SG90_MAX_ANGLE * (SG90_MAX_PULSE_US - SG90_MIN_PULSE_US);
   uint32_t duty = pulse_us / SG90_PERIOD_US * SG90_DUTY_MAX;
 
-  ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, channel, duty));
-  ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, channel));
+  esp_err_t err = ledc_set_duty(LEDC_LOW_SPEED_MODE, channel, duty);
+  if (err != ESP_OK) {
+    return err;
+  }
+  err = ledc_update_duty(LEDC_LOW_SPEED_MODE, channel);
+  if (err != ESP_OK) {
+    return err;
+  }
 
   return ESP_OK;
 }

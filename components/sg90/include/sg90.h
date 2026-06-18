@@ -12,6 +12,6 @@
 
 esp_err_t sg90_channel_init(const ledc_channel_t channel,
                             const gpio_num_t gpio);
-esp_err_t sg90_timer_init();
+esp_err_t sg90_timer_init(void);
 
 esp_err_t sg90_set_angle(const ledc_channel_t channel, float angle);
