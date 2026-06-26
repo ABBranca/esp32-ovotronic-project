@@ -1,0 +1,19 @@
+{
+  // ─────────────────────────────────────────────────────────────────────────
+  // Template for .vscode/settings.json (which is gitignored — do NOT commit it).
+  //
+  // Setup:
+  //   1. Copy this file to .vscode/settings.json
+  //   2. Command Palette → "ESP-IDF: Configure ESP-IDF Extension" → "Use existing
+  //      setup" and pick your installed ESP-IDF (e.g. v6.0.1). The extension fills
+  //      in the machine-specific paths (idf.currentSetup, clangd.path, etc.).
+  //
+  // Only the portable, project-wide keys belong here. Anything containing an
+  // absolute path to ~/.espressif must stay out of version control.
+  // ─────────────────────────────────────────────────────────────────────────
+  "idf.extensionActivationMode": "always",
+  "idf.openOcdConfigs": ["board/esp32s3-builtin.cfg"],
+  "idf.customExtraVars": {
+    "IDF_TARGET": "esp32s3"
+  }
+}
