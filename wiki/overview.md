@@ -33,9 +33,11 @@ intended sequence (currently pseudocode in `main/main.c`, see
 
 ## Implementation status
 
-- **Implemented:** the four I2C/PWM drivers and hardware init in `app_main`
-  (see [[drivers]]).
-- **PLANNED:** the state machine that sequences the steps above, plus the
-  `limit_switch` and `buzzer` drivers and the mixer-motor and heater control.
+- **Implemented:** the I2C/PWM drivers (`i2c_bus`, `tmp102q1`, `lcd1602`,
+  `sg90`, `buzzer`) and hardware init in `app_main` (see [[drivers]]).
+- **Scaffolded:** the `limit_switch` component — the consuming flags live in
+  `main.c`, but the driver `.c`/`.h` are still empty.
+- **PLANNED:** the state machine that sequences the steps above, the
+  `limit_switch` ISR, and the mixer-motor and heater control.
 
 Related: [[hardware]] · [[drivers]] · [[state-machine]] · [[conventions]]

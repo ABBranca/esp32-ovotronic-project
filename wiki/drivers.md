@@ -44,25 +44,41 @@ esp_err_t sg90_channel_init(const ledc_channel_t channel, const gpio_num_t gpio)
 esp_err_t sg90_set_angle(const ledc_channel_t channel, float angle);
 ```
 
-## Planned
+### `buzzer` — completion notify
+Passive piezo driven by LEDC on its **own** timer (`LEDC_TIMER_1`, channel 2,
+10-bit resolution) — it cannot share the servo's 50 Hz `LEDC_TIMER_0`, since
+frequency is per-timer. `buzzer_init` configures the timer + channel at duty 0
+(silent); `buzzer_ring` retunes the timer, drives 50% duty for `duration` ms,
+then returns to silence. Default tone is `BUZZER_DEFAULT_FREQUENCY` (3000 Hz);
+wired to GPIO 48. Initialized in `app_main`.
+```c
+#define BUZZER_DEFAULT_FREQUENCY 3000
+void buzzer_init(const gpio_num_t gpio_num, const uint32_t frequency);
+void buzzer_ring(const uint32_t frequency, const uint32_t duration);
+```
 
-### `limit_switch` — pan end-of-travel  **PLANNED**
-GPIO input, **active-low** (switch to GND + internal pull-up), with a
-**hardware interrupt on the falling edge** (`GPIO_INTR_NEGEDGE`). The ISR stays
-tiny: it sets a `volatile bool` global per switch (e.g. `pan_at_bottom`,
-`pan_at_top`); the consuming task polls that flag. The GPIO ISR service is
-installed once app-wide (treat `ESP_ERR_INVALID_STATE` from a second install as
-OK). Handler must be `IRAM_ATTR`. Contact bounce is the known gotcha — add a
-time-based debounce only if false triggers appear. Proposed API:
+## Scaffolded
+
+### `limit_switch` — end-of-travel sensors  **IN PROGRESS**
+The component is registered in the build (`REQUIRES esp_driver_gpio`, listed in
+`main/CMakeLists.txt`), but `limit_switch.c` / `limit_switch.h` are still empty
+stubs — no driver code yet. The consuming side already exists: `main.c` declares
+the `volatile bool` flags an ISR will set — `pan_at_top`, `pan_at_bottom` (pan
+end-of-travel) and `breaker_at_begin`, `breaker_at_end` (egg-breaker travel).
+The diagram wires four slide switches accordingly.
+
+Planned approach: GPIO input, **active-low** (switch to GND + internal pull-up),
+with a **hardware interrupt on the falling edge** (`GPIO_INTR_NEGEDGE`). The ISR
+stays tiny — it sets the matching `volatile bool` flag; the consuming task polls
+it. The GPIO ISR service is installed once app-wide (treat `ESP_ERR_INVALID_STATE`
+from a second install as OK). Handler must be `IRAM_ATTR`. Contact bounce is the
+known gotcha — add a time-based debounce only if false triggers appear. Proposed
+API:
 ```c
 esp_err_t limit_switch_init(const gpio_num_t gpio, gpio_isr_t isr_handler, void *arg);
 ```
 
-### `buzzer` — completion notify  **PLANNED**
-If passive: LEDC on its **own** timer (`LEDC_TIMER_1`, ~2 kHz, channel 2) —
-cannot share the servo's 50 Hz `LEDC_TIMER_0`. If active: plain GPIO on/off, no
-LEDC needed. The Wokwi buzzer part is passive, so the LEDC path suits
-simulation.
+## Planned
 
 ### Motor / heater  **PLANNED**
 Planetary mixer driven by a DRV8870 H-bridge (PWM for RPM, since *Strapazzate*

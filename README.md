@@ -3,6 +3,26 @@
 Embedded firmware for an automated egg-cooking machine. Target MCU: **ESP32-S3**
 (`board-esp32-s3-devkitc-1`), built on **ESP-IDF v6.0.1** + **FreeRTOS**. Language: C.
 
+## Status
+
+Each peripheral lives in its own ESP-IDF component under `components/`. `app_main`
+(`main/main.c`) currently performs hardware init only; the cooking state machine is
+still pseudocode.
+
+| Component | Role | Status |
+|-----------|------|--------|
+| `i2c_bus` | Shared I2C master bus (SDA 4, SCL 5) | implemented |
+| `tmp102q1` | TMP102 temperature sensor (I2C `0x48`) | implemented |
+| `lcd1602` | 16x2 LCD via PCF8574 backpack (I2C `0x27`) | implemented |
+| `sg90` | SG90 servos via LEDC (supplements + egg breaker) | implemented |
+| `buzzer` | Passive buzzer via LEDC (GPIO 48, 3 kHz) | implemented |
+| `limit_switch` | End-of-travel sensors (pan + egg breaker) | scaffolded (driver empty) |
+| Mixer motor / heater | DRV8870 H-bridge + thermostat | planned |
+
+See the [`wiki/`](wiki/index.md) for the full design: [overview](wiki/overview.md),
+[hardware map](wiki/hardware.md), [drivers](wiki/drivers.md), and the
+[state machine](wiki/state-machine.md).
+
 ## Setup (per developer)
 
 Toolchain paths and editor config are **per-machine** and are intentionally not committed, so
