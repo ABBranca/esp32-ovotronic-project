@@ -18,7 +18,7 @@
       "rotate": 270,
       "attrs": {}
     },
-    { "type": "chip-drv8870", "id": "chip2", "top": -296.58, "left": 446.4, "attrs": {} },
+    { "type": "chip-drv8870", "id": "chip2", "top": -219.78, "left": 264, "attrs": {} },
     {
       "type": "wokwi-lcd1602",
       "id": "lcd1",
@@ -38,7 +38,7 @@
     { "type": "wokwi-gnd", "id": "gnd1", "top": 96, "left": 469.8, "attrs": {} },
     { "type": "wokwi-gnd", "id": "gnd2", "top": 220.8, "left": 469.8, "attrs": {} },
     { "type": "wokwi-gnd", "id": "gnd3", "top": 259.2, "left": 57, "attrs": {} },
-    { "type": "wokwi-gnd", "id": "gnd4", "top": -249.6, "left": 325.8, "attrs": {} },
+    { "type": "wokwi-gnd", "id": "gnd4", "top": -172.8, "left": 143.4, "attrs": {} },
     { "type": "wokwi-gnd", "id": "gnd5", "top": -249.6, "left": -173.4, "attrs": {} },
     { "type": "wokwi-gnd", "id": "gnd6", "top": 460.8, "left": -269.4, "attrs": {} },
     { "type": "wokwi-vcc", "id": "vcc4", "top": 365.56, "left": -220.8, "attrs": {} },
@@ -69,7 +69,7 @@
     { "type": "wokwi-gnd", "id": "gnd9", "top": 105.6, "left": -288.6, "attrs": {} },
     { "type": "wokwi-gnd", "id": "gnd10", "top": 441.6, "left": 498.6, "attrs": {} },
     { "type": "wokwi-vcc", "id": "vcc2", "top": -498.44, "left": -9.6, "attrs": {} },
-    { "type": "wokwi-vcc", "id": "vcc6", "top": -402.44, "left": 633.6, "attrs": {} },
+    { "type": "wokwi-vcc", "id": "vcc6", "top": -325.64, "left": 451.2, "attrs": {} },
     { "type": "wokwi-junction", "id": "j3", "top": -504, "left": -187.2, "attrs": {} },
     { "type": "wokwi-junction", "id": "j4", "top": -600, "left": -187.2, "attrs": {} },
     {
@@ -190,34 +190,34 @@
     {
       "type": "wokwi-led",
       "id": "led3",
-      "top": -471.2,
-      "left": 356.6,
+      "top": -394.4,
+      "left": 174.2,
       "rotate": 270,
       "attrs": { "color": "red" }
     },
     {
       "type": "wokwi-led",
       "id": "led4",
-      "top": -471.6,
-      "left": 457.8,
+      "top": -394.8,
+      "left": 275.4,
       "rotate": 90,
       "attrs": { "color": "red", "flip": "" }
     },
     {
       "type": "wokwi-resistor",
       "id": "r6",
-      "top": -523.6,
-      "left": 517.85,
+      "top": -446.8,
+      "left": 335.45,
       "rotate": 90,
       "attrs": { "value": "220" }
     },
-    { "type": "wokwi-junction", "id": "j7", "top": -408, "left": 427.2, "attrs": {} },
-    { "type": "wokwi-junction", "id": "j8", "top": -504, "left": 427.2, "attrs": {} },
+    { "type": "wokwi-junction", "id": "j7", "top": -331.2, "left": 244.8, "attrs": {} },
+    { "type": "wokwi-junction", "id": "j8", "top": -427.2, "left": 244.8, "attrs": {} },
     {
       "type": "wokwi-text",
       "id": "text5",
-      "top": -240,
-      "left": 460.8,
+      "top": -163.2,
+      "left": 278.4,
       "attrs": { "text": "MOTORE DC\nPADELLA" }
     },
     { "type": "chip-drv8870", "id": "chip3", "top": -267.78, "left": -561.6, "attrs": {} },
@@ -273,15 +273,15 @@
     {
       "type": "wokwi-text",
       "id": "text9",
-      "top": 48,
-      "left": 748.8,
+      "top": 172.8,
+      "left": 758.4,
       "attrs": { "text": "SERVO EGG \nSELECTOR" }
     },
     {
       "type": "wokwi-text",
       "id": "text10",
-      "top": 172.8,
-      "left": 748.8,
+      "top": 38.4,
+      "left": 758.4,
       "attrs": { "text": "SERVO DISPOSER \nSUPPLEMENTI" }
     }
   ],
@@ -311,7 +311,7 @@
     [ "gnd9:GND", "tmp1:ADD0", "black", [ "v0" ] ],
     [ "esp:47", "servo1:PWM", "gold", [ "h316.8", "v9.4" ] ],
     [ "esp:42", "chip2:IN2", "gray", [ "h211.2", "v-364.8" ] ],
-    [ "chip2:IN1", "esp:41", "green", [ "h-220.8", "v364.8" ] ],
+    [ "chip2:IN1", "esp:41", "violet", [ "h-48", "v288" ] ],
     [ "esp:7", "chip1:IN2", "violet", [ "h0" ] ],
     [ "esp:15", "chip1:IN1", "gray", [ "h0" ] ],
     [ "bz1:1", "gnd10:GND", "black", [ "v-28.8", "h96" ] ],
@@ -361,7 +361,7 @@
     [ "j10:J", "r7:1", "green", [ "v-67.2", "h115.2" ] ],
     [ "j9:J", "chip3:OUT2", "green", [ "v38.4", "h153.6", "v86.4" ] ],
     [ "chip3:IN1", "esp:10", "gray", [ "h-48", "v422.4" ] ],
-    [ "chip3:VREF", "esp:11", "green", [ "h-28.8", "v384", "h432", "v38.4" ] ]
+    [ "esp:11", "chip3:IN2", "violet", [ "h-76.85", "v-28.8", "h-460.8", "v-412.8" ] ]
   ],
   "dependencies": {}
 }

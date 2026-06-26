@@ -1,6 +1,7 @@
 #include "hal/ledc_types.h"
 #include "i2c_bus.h"
 #include "lcd1602.h"
+#include "buzzer.h"
 #include "sg90.h"
 #include "soc/gpio_num.h"
 #include "tmp102q1.h"
@@ -23,6 +24,18 @@ static const ledc_channel_t ds_sg90_channel = LEDC_CHANNEL_0;
 static const ledc_channel_t eb_sg90_channel = LEDC_CHANNEL_1;
 static const gpio_num_t ds_sg90_gpio = 2;
 static const gpio_num_t eb_sg90_gpio = 47;
+static const gpio_num_t buzzer_gpio = 48;
+
+
+// Variabili globali per la gestione dei sensori di fine corsa padella
+volatile bool pan_at_top = false;
+volatile bool pan_at_bottom = false;
+
+
+// Variabili globali per la gestione dei sensori di fine corsa egg breaker
+volatile bool breaker_at_begin = false;
+volatile bool breaker_at_end = false;
+
 
 void app_main(void) {
   /*
@@ -35,6 +48,7 @@ void app_main(void) {
   i2c_init();               // Inizializza bus per comunicazione I2C
   tmp102_init(bus_handle);  // Inizializza I2C sensore di temperatura
   lcd1602_init(bus_handle); // Inizializza schermo LCD1602
+  buzzer_init(buzzer_gpio); // Inizializza cicalino
 
   lcd1602_set_cursor(0, 3);
   lcd1602_print("OVOTRONIC");
