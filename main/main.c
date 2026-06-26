@@ -3,6 +3,7 @@
 #include "hal/ledc_types.h"
 #include "i2c_bus.h"
 #include "lcd1602.h"
+#include "limit_switch.h"
 #include "sg90.h"
 #include "soc/gpio_num.h"
 #include "tmp102q1.h"
@@ -27,16 +28,10 @@ static const ledc_channel_t eb_sg90_channel = LEDC_CHANNEL_1;
 static const gpio_num_t ds_sg90_gpio = 2;
 static const gpio_num_t eb_sg90_gpio = 47;
 static const gpio_num_t buzzer_gpio = 48;
+static const gpio_num_t pan_limit_switch_gpio = 13;
+static const gpio_num_t eb_limit_switch_gpio = 12;
 
 const uint32_t buzzer_default_frequency = BUZZER_DEFAULT_FREQUENCY;
-
-// Variabili globali per la gestione dei sensori di fine corsa padella
-volatile bool pan_at_top = false;
-volatile bool pan_at_bottom = false;
-
-// Variabili globali per la gestione dei sensori di fine corsa egg breaker
-volatile bool breaker_at_begin = false;
-volatile bool breaker_at_end = false;
 
 void app_main(void) {
   /*
@@ -51,6 +46,10 @@ void app_main(void) {
   lcd1602_init(bus_handle); // Inizializza schermo LCD1602
   buzzer_init(buzzer_gpio, buzzer_default_frequency); // Inizializza cicalino
   gpio_install_isr_service(0); // Inizializza ISR per sensori di fine corsa
+  limit_switch_init(
+      pan_limit_switch_gpio); // Inizializza sensore di fine corsa padella
+  limit_switch_init(
+      eb_limit_switch_gpio); // Inizializza sensore di fine corsa egg breaker
 
   lcd1602_set_cursor(0, 3);
   lcd1602_print("OVOTRONIC");
