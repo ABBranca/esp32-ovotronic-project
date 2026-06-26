@@ -7,11 +7,15 @@
     "--query-driver=**",
     "--compile-commands-dir=/home/ale/Documents/Uni/Corsi/PSM/esp32-ovotronic-project/build"
   ],
-  "idf.currentSetup": "/home/ale/.espressif/v6.0.1/esp-idf",
+  "idf.currentSetup": "/home/alessandro/.espressif/v6.0.1/esp-idf",
   "idf.openOcdConfigs": [
     "board/esp32s3-builtin.cfg"
   ],
   "idf.customExtraVars": {
     "IDF_TARGET": "esp32s3"
+  },
+  "vim.handleKeys": {
+    "<C-e>": false,
+    "<C-p>": false
   }
 }
