@@ -1,6 +1,7 @@
 #pragma once
-#include "soc/gpio_num.h"
 #include <stdint.h>
+
+#include "soc/gpio_num.h"
 
 #define BUZZER_DEFAULT_FREQUENCY 3000
 

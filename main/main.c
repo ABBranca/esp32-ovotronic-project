@@ -1,4 +1,5 @@
 #include "buzzer.h"
+#include "driver/gpio.h"
 #include "hal/ledc_types.h"
 #include "i2c_bus.h"
 #include "lcd1602.h"
@@ -49,6 +50,7 @@ void app_main(void) {
   tmp102_init(bus_handle);  // Inizializza I2C sensore di temperatura
   lcd1602_init(bus_handle); // Inizializza schermo LCD1602
   buzzer_init(buzzer_gpio, buzzer_default_frequency); // Inizializza cicalino
+  gpio_install_isr_service(0); // Inizializza ISR per sensori di fine corsa
 
   lcd1602_set_cursor(0, 3);
   lcd1602_print("OVOTRONIC");
