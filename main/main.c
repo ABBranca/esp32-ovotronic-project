@@ -1,10 +1,11 @@
+#include "buzzer.h"
 #include "hal/ledc_types.h"
 #include "i2c_bus.h"
 #include "lcd1602.h"
-#include "buzzer.h"
 #include "sg90.h"
 #include "soc/gpio_num.h"
 #include "tmp102q1.h"
+#include <stdint.h>
 
 /*
 README: Codice per l'implementazione di ESP32-S3 nel progetto Ovotronic.
@@ -26,16 +27,15 @@ static const gpio_num_t ds_sg90_gpio = 2;
 static const gpio_num_t eb_sg90_gpio = 47;
 static const gpio_num_t buzzer_gpio = 48;
 
+const uint32_t buzzer_default_frequency = BUZZER_DEFAULT_FREQUENCY;
 
 // Variabili globali per la gestione dei sensori di fine corsa padella
 volatile bool pan_at_top = false;
 volatile bool pan_at_bottom = false;
 
-
 // Variabili globali per la gestione dei sensori di fine corsa egg breaker
 volatile bool breaker_at_begin = false;
 volatile bool breaker_at_end = false;
-
 
 void app_main(void) {
   /*
@@ -48,7 +48,7 @@ void app_main(void) {
   i2c_init();               // Inizializza bus per comunicazione I2C
   tmp102_init(bus_handle);  // Inizializza I2C sensore di temperatura
   lcd1602_init(bus_handle); // Inizializza schermo LCD1602
-  buzzer_init(buzzer_gpio); // Inizializza cicalino
+  buzzer_init(buzzer_gpio, buzzer_default_frequency); // Inizializza cicalino
 
   lcd1602_set_cursor(0, 3);
   lcd1602_print("OVOTRONIC");

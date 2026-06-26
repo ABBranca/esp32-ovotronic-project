@@ -15,5 +15,13 @@
   "idf.openOcdConfigs": ["board/esp32s3-builtin.cfg"],
   "idf.customExtraVars": {
     "IDF_TARGET": "esp32s3"
+  },
+  // Auto-formatta i file C/C++ al salvataggio usando clangd (legge .clang-format).
+  "editor.formatOnSave": true,
+  "[c]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+  },
+  "[cpp]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
   }
 }

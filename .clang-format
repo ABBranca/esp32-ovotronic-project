@@ -1,0 +1,10 @@
+---
+# Stile di formattazione del codice (usato da clangd per l'auto-indent).
+# Base: Google — indentazione a 2 spazi, parentesi attaccate, limite 80 colonne.
+BasedOnStyle: Google
+Language: Cpp
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+ColumnLimit: 80
+...
