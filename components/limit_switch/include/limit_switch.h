@@ -14,4 +14,6 @@ typedef enum { LS_AXIS_PAN, LS_AXIS_EB } limit_switch_axis_t;
 
 void limit_switch_init(const gpio_num_t gpio_num);
 
+bool get_axis_motion_direction(limit_switch_axis_t axis);
+
 EventGroupHandle_t get_limit_switch_event_group(void);
