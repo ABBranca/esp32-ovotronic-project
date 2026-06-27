@@ -1,11 +1,13 @@
 #include "buzzer.h"
 #include "driver/gpio.h"
+#include "freertos/idf_additions.h"
 #include "hal/ledc_types.h"
 #include "i2c_bus.h"
 #include "lcd1602.h"
 #include "limit_switch.h"
 #include "sg90.h"
 #include "soc/gpio_num.h"
+#include "supervisor.h"
 #include "tmp102q1.h"
 #include <stdint.h>
 
@@ -61,6 +63,9 @@ void app_main(void) {
 
   sg90_channel_init(eb_sg90_channel,
                     eb_sg90_gpio); // Inizializzo canale sg90 per egg breaker
+
+  xTaskCreate(supervisor_task, "supervisor_task", 4096, NULL, 5,
+              &supervisor_task_handle); // Creo il task supervisor.
 
   // [ ]: Ovotronic resetta la posizione verticale della padella,
   // assicurandosi che sia nella posizione più bassa tramite sensore fine
