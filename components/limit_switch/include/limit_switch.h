@@ -2,6 +2,7 @@
 
 #include "freertos/idf_additions.h"
 #include "soc/gpio_num.h"
+#include <stdbool.h>
 
 #define PAN_AT_BOTTOM_BIT (1 << 0)
 #define PAN_AT_TOP_BIT (1 << 1)
@@ -17,3 +18,7 @@ void limit_switch_init(
     const gpio_num_t gpio_num);  // Inizializza il sensore di fine corsa
 
 void limit_switch_set_notify_task_handle(TaskHandle_t task_handle);
+
+// Ritorna true se l'asse e' stabilmente al finecorsa (linea HIGH = switch NC
+// aperto). Da usare nel consumer dopo il debounce per validare la notifica.
+bool limit_switch_is_at_limit(ls_axis_t axis);

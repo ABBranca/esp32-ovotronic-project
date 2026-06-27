@@ -16,6 +16,12 @@ void limit_switch_set_notify_task_handle(TaskHandle_t task_handle) {
   s_notify_target = task_handle;
 }
 
+bool limit_switch_is_at_limit(ls_axis_t axis) {
+  gpio_num_t gpio =
+      (axis == LS_AXIS_PAN) ? PAN_LIMIT_SWITCH_GPIO : EB_LIMIT_SWITCH_GPIO;
+  return gpio_get_level(gpio) == 1; // at-limit = HIGH (switch NC aperto)
+}
+
 static void IRAM_ATTR limit_switch_isr_handler(void *arg) {
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
   uint32_t axis =

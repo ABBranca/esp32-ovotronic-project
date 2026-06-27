@@ -53,9 +53,6 @@ void app_main(void) {
   limit_switch_init(
       eb_limit_switch_gpio); // Inizializza sensore di fine corsa egg breaker
 
-  lcd1602_set_cursor(0, 3);
-  lcd1602_print("OVOTRONIC");
-
   sg90_timer_init(); // Inizializzazione Servo SG90
 
   sg90_channel_init(ds_sg90_channel,

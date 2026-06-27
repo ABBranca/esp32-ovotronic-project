@@ -57,32 +57,67 @@ void buzzer_init(const gpio_num_t gpio_num, const uint32_t frequency);
 void buzzer_ring(const uint32_t frequency, const uint32_t duration);
 ```
 
-## Scaffolded
+## In progress
 
 ### `limit_switch` — end-of-travel sensors  **IN PROGRESS**
-The component is registered in the build (`REQUIRES esp_driver_gpio`, listed in
-`main/CMakeLists.txt`), but `limit_switch.c` / `limit_switch.h` are still empty
-stubs — no driver code yet. The consuming side already exists: `main.c` declares
-the `volatile bool` flags an ISR will set — `pan_at_top`, `pan_at_bottom` (pan
-end-of-travel) and `breaker_at_begin`, `breaker_at_end` (egg-breaker travel).
-The diagram wires four slide switches accordingly.
+Registered in the build (`REQUIRES esp_driver_gpio`, listed in
+`main/CMakeLists.txt`). GPIO input, **normally-closed switches in series** per
+axis: the diagram wires them with an **external pull-up** (`r1`/`r2`, 10 kΩ to
+3V3), so idle (both closed) holds the line **LOW**, and reaching a limit **opens**
+the actuated switch → series breaks → line goes HIGH — interrupt on the **rising
+edge** (`GPIO_INTR_POSEDGE`); internal pulls disabled. This is fail-safe: a broken
+wire / disconnected switch reads as "limit reached". Four `wokwi-slide-switch`
+parts sit on GPIO 12 (egg breaker) and GPIO 13 (pan).
 
-Planned approach: GPIO input, **active-low** (switch to GND + internal pull-up),
-with a **hardware interrupt on the falling edge** (`GPIO_INTR_NEGEDGE`). The ISR
-stays tiny — it sets the matching `volatile bool` flag; the consuming task polls
-it. The GPIO ISR service is installed once app-wide (treat `ESP_ERR_INVALID_STATE`
-from a second install as OK). Handler must be `IRAM_ATTR`. Contact bounce is the
-known gotcha — add a time-based debounce only if false triggers appear. Proposed
-API:
+Design follows the ISR-defers-to-task pattern (see [[state-machine]]): the ISR is
+tiny and `IRAM_ATTR`, and instead of touching a `volatile bool` or the event
+group from interrupt context, it sends a **task notification** to the supervisor
+(`xEventGroupSetBitsFromISR` is not IRAM-safe; task notification is). The axis is
+encoded as a one-hot bit (`1u << axis`) carried in the notification value, and the
+per-pin axis is passed through `gpio_isr_handler_add`'s `void *arg`. Debounce is
+the consumer's job (`vTaskDelay` settle + `ulTaskNotifyValueClear`), not the
+ISR's. The GPIO ISR service is installed once app-wide in `app_main`. The
+notify-target is registered by the supervisor at startup, keeping the component
+decoupled from `main` (no back-dependency). Public API:
 ```c
-esp_err_t limit_switch_init(const gpio_num_t gpio, gpio_isr_t isr_handler, void *arg);
+void limit_switch_init(const gpio_num_t gpio_num);
+void limit_switch_set_notify_task_handle(TaskHandle_t task_handle);
 ```
+Remaining: direction must be driven by the motor command (see [[state-machine]]),
+not by toggling a flag. (The configured edge `GPIO_INTR_POSEDGE` is correct for the
+NC-in-series wiring — reaching a limit opens the switch and pulls the line HIGH.)
 
 ## Planned
 
-### Motor / heater  **PLANNED**
-Planetary mixer driven by a DRV8870 H-bridge (PWM for RPM, since *Strapazzate*
-lowers RPM). Heating resistor switched by GPIO/PWM, gated by `tmp102` reads in a
-thermostat control task. See [[state-machine]].
+### `dc_motor` — DRV8870 H-bridges  **PLANNED**
+Three brushed-DC motors, each on a DRV8870. Direction = which input is asserted;
+speed = PWM duty (`IN1`=PWM/`IN2`=0 → one way, swap for the other; 0/0 coast,
+1/1 brake).
+
+| Motor | IN1 | IN2 | Speed control |
+|-------|-----|-----|---------------|
+| Pan (raise/lower) | GPIO 41 | GPIO 42 | no → plain GPIO |
+| Egg breaker | GPIO 15 | GPIO 7 | no → plain GPIO |
+| Planetary mixer | GPIO 10 | GPIO 11 | **yes** → LEDC PWM |
+
+LEDC budget (ESP32-S3: 8 channels / 4 timers; already used: servos ch0/ch1 on
+`LEDC_TIMER_0`, buzzer ch2 on `LEDC_TIMER_1`): only the planetary mixer needs RPM
+control (*Strapazzate*), so only it uses one PWM channel on its own timer
+(`LEDC_TIMER_2`, ~20 kHz). Pan and breaker run full-speed via digital GPIO. The
+driver exposes the blocking helpers the supervisor calls — `motor_pan_start(dir)`
+/ `motor_pan_stop`, `motor_eb_*`, `motor_mixer_set_duty(...)` — and **sets
+`motion_direction[]` before moving** (the single source of truth for direction).
+
+### `encoder` — KY-040 rotary knob  **PLANNED**
+User input for `SELECT_RECIPE` / `SELECT_COUNT` / START. CLK=GPIO 18, DT=GPIO 17,
+button SW=GPIO 21. Quadrature decode (ISR on CLK reading DT, or the **PCNT**
+peripheral with its hardware glitch filter for robust debounce) produces discrete
+CW/CCW events; the button is debounced like the limit switch. Events are pushed to
+the supervisor via a queue (`xQueueSendFromISR`).
+
+### Heater  **PLANNED**
+Heating resistor switched by GPIO/PWM, gated by `tmp102` reads in the `HEAT`
+thermostat loop (inline in the supervisor, or a dedicated task). See
+[[state-machine]].
 
 Related: [[hardware]] · [[state-machine]] · [[conventions]]

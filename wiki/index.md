@@ -22,9 +22,12 @@ schema. Pages cross-reference with `[[wikilinks]]`.
 - [[build-and-simulation]] — Build/flash/monitor with ESP-IDF and Wokwi sim.
 
 ## Status legend
-Pages describe both what exists (the five implemented drivers — `i2c_bus`,
-`tmp102q1`, `lcd1602`, `sg90`, `buzzer`), what is scaffolded (the `limit_switch`
-component — registered and with its flags in `main.c`, but an empty driver), and
-what is planned (the state machine and the mixer-motor / heater control). Planned
-and in-progress items are marked inline so the wiki stays honest about the gap
-between design and code.
+Pages describe what exists, what is in progress, and what is planned, marked
+inline so the wiki stays honest about the gap between design and code:
+- **Implemented:** five drivers — `i2c_bus`, `tmp102q1`, `lcd1602`, `sg90`,
+  `buzzer`.
+- **In progress:** the `limit_switch` driver (interrupt → task notification,
+  consumed by the supervisor) and the state machine (single-orchestrator design,
+  Option A — see [[state-machine]]).
+- **Planned:** the `dc_motor` (DRV8870 ×3), `encoder` (KY-040), and `heater`
+  drivers.

@@ -23,6 +23,11 @@ per channel — so peripherals needing different frequencies need different time
 |--------------|---------|---------------------------------|
 | `LEDC_TIMER_0` | 50 Hz | SG90 servos (channels 0 and 1)  |
 | `LEDC_TIMER_1` | 3 kHz | buzzer (channel 2, 10-bit)      |
+| `LEDC_TIMER_2` | ~20 kHz | planetary mixer PWM (PLANNED) |
+
+Channel budget: the ESP32-S3 has 8 LEDC channels. Servos use 2 and the buzzer 1;
+the planetary mixer adds 1 (only it needs variable RPM). The pan and egg-breaker
+DC motors run full-speed via plain digital GPIO, not PWM, to stay within budget.
 
 ## Peripherals and pin/channel map
 
@@ -33,9 +38,12 @@ per channel — so peripherals needing different frequencies need different time
 | SG90 servo — supplements (`ds`) | LEDC | ch 0, GPIO 2 | `sg90` | implemented |
 | SG90 servo — egg breaker (`eb`) | LEDC | ch 1, GPIO 47 | `sg90` | implemented |
 | Buzzer (completion notify) | LEDC, passive | ch 2 / `LEDC_TIMER_1`, GPIO 48, 3 kHz | `buzzer` | implemented |
-| Limit switches — pan top/bottom, breaker begin/end | GPIO input | active-low, IRQ on falling edge | `limit_switch` | scaffolded (flags in `main.c`, driver empty) |
-| Planetary mixer motor | DRV8870 H-bridge | — | **PLANNED** | designed |
-| Heating resistor | GPIO/PWM, thermostat-gated | regulated by [[drivers]] TMP102 reads | **PLANNED** | designed |
+| Limit switches — pan, egg breaker | GPIO input | NC, idle LOW (ext. pull-up), IRQ rising edge (`GPIO_INTR_POSEDGE`); GPIO 12 (breaker), 13 (pan) | `limit_switch` | in progress (ISR → task notification) |
+| Pan DC motor (raise/lower) | DRV8870 H-bridge | IN1=GPIO 41, IN2=GPIO 42; digital (full speed) | `dc_motor` | **PLANNED** |
+| Egg-breaker DC motor | DRV8870 H-bridge | IN1=GPIO 15, IN2=GPIO 7; digital (full speed) | `dc_motor` | **PLANNED** |
+| Planetary mixer motor | DRV8870 H-bridge | IN1=GPIO 10, IN2=GPIO 11; LEDC PWM (`LEDC_TIMER_2`) | `dc_motor` | **PLANNED** |
+| Rotary encoder (KY-040) | GPIO | CLK=GPIO 18, DT=GPIO 17, SW=GPIO 21 | `encoder` | **PLANNED** |
+| Heating resistor | GPIO/PWM, thermostat-gated | regulated by [[drivers]] TMP102 reads | `heater` | **PLANNED** |
 
 ## Simulation parts
 `wokwi.toml` loads custom chips: `drv8870` (motor driver) and `tmp102`
