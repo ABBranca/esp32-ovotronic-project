@@ -1,6 +1,5 @@
 #pragma once
 
-#include "driver/ledc.h"
 #include "soc/gpio_num.h"
 
 struct dc_motor_config {

@@ -1,4 +1,5 @@
 #include "buzzer.h"
+#include "dc_motor_driver.h"
 #include "driver/gpio.h"
 #include "freertos/idf_additions.h"
 #include "hal/ledc_types.h"
@@ -43,9 +44,10 @@ void app_main(void) {
   */
 
   // Setup
-  i2c_init();               // Inizializza bus per comunicazione I2C
-  tmp102_init(bus_handle);  // Inizializza I2C sensore di temperatura
-  lcd1602_init(bus_handle); // Inizializza schermo LCD1602
+  i2c_init();                       // Inizializza bus per comunicazione I2C
+  tmp102_init(bus_handle);          // Inizializza I2C sensore di temperatura
+  lcd1602_init(bus_handle);         // Inizializza schermo LCD1602
+  pwm_dc_motor_driver_init_timer(); // Inizializza timer per motore DC
   buzzer_init(buzzer_gpio, buzzer_default_frequency); // Inizializza cicalino
   gpio_install_isr_service(0); // Inizializza ISR per sensori di fine corsa
   limit_switch_init(
