@@ -1,9 +1,16 @@
 #include "dc_motor_driver.h"
+#include "driver/gpio.h"
 #include "driver/ledc.h"
 #include "esp_err.h"
+#include "hal/gpio_types.h"
 #include "hal/ledc_types.h"
 #include "soc/clk_tree_defs.h"
 #include "soc/gpio_num.h"
+#include <stdint.h>
+
+static inline uint32_t slow_decay_duty(uint32_t speed) {
+  return DC_MOTOR_DUTY_MAX - speed;
+}
 
 void pwm_dc_motor_driver_init_timer() {
   ledc_timer_config_t ledc_timer = {
@@ -18,7 +25,7 @@ void pwm_dc_motor_driver_init_timer() {
 }
 
 void pwm_dc_motor_driver_init(const struct dc_motor_config *config) {
-  ledc_channel_config_t ledc_channel = {
+  ledc_channel_config_t ledc_channel_gpio1 = {
       .channel = config->channel,
       .duty = 0,
       .gpio_num = config->gpio_num_in1, // GPIO pin for the motor control
@@ -27,5 +34,34 @@ void pwm_dc_motor_driver_init(const struct dc_motor_config *config) {
       .timer_sel = LEDC_TIMER_2};
 
   // Initialize the DC motor driver here
-  ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
+  ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel_gpio1));
+}
+
+void dc_motor_driver_move_forward(const struct dc_motor_config *config,
+                                  uint32_t speed) {
+  ledc_set_pin(config->gpio_num_in2, LEDC_LOW_SPEED_MODE, config->channel);
+
+  ledc_set_duty_and_update(LEDC_LOW_SPEED_MODE, config->channel,
+                           slow_decay_duty(speed), 0);
+
+  gpio_set_direction(config->gpio_num_in1, GPIO_MODE_OUTPUT);
+  gpio_set_level(config->gpio_num_in1, 1);
+}
+void dc_motor_driver_move_backward(const struct dc_motor_config *config,
+                                   uint32_t speed) {
+  ledc_set_pin(config->gpio_num_in1, LEDC_LOW_SPEED_MODE, config->channel);
+
+  ledc_set_duty_and_update(LEDC_LOW_SPEED_MODE, config->channel,
+                           slow_decay_duty(speed), 0);
+
+  gpio_set_direction(config->gpio_num_in2, GPIO_MODE_OUTPUT);
+  gpio_set_level(config->gpio_num_in2, 1);
+}
+
+void dc_motor_driver_brake(const struct dc_motor_config *config) {
+  ledc_stop(LEDC_LOW_SPEED_MODE, config->channel, 1);
+  gpio_set_direction(config->gpio_num_in1, GPIO_MODE_OUTPUT);
+  gpio_set_level(config->gpio_num_in1, 1);
+  gpio_set_direction(config->gpio_num_in2, GPIO_MODE_OUTPUT);
+  gpio_set_level(config->gpio_num_in2, 1);
 }

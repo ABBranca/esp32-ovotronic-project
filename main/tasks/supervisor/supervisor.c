@@ -72,7 +72,6 @@ void supervisor_task(void *pvParameters) {
   lcd1602_print("PRONTO!");
 
   while (true) {
-
     vTaskDelay(pdMS_TO_TICKS(2000));
   }
 }
