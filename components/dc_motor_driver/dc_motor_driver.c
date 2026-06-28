@@ -18,8 +18,8 @@ void pwm_dc_motor_driver_init_timer() {
 }
 
 void pwm_dc_motor_driver_init(const struct dc_motor_config *config) {
-  ledc_channel_config_t ledc_channel1 = {
-      .channel = config->channel1,
+  ledc_channel_config_t ledc_channel = {
+      .channel = config->channel,
       .duty = 0,
       .gpio_num = config->gpio_num_in1, // GPIO pin for the motor control
       .speed_mode = LEDC_LOW_SPEED_MODE,
@@ -27,17 +27,5 @@ void pwm_dc_motor_driver_init(const struct dc_motor_config *config) {
       .timer_sel = LEDC_TIMER_2};
 
   // Initialize the DC motor driver here
-  ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel1));
-
-  ledc_channel_config_t ledc_channel2 = {
-      .channel = config->channel2,
-      .duty = 0,
-      .gpio_num = config->gpio_num_in2, // GPIO pin for the motor control
-      .speed_mode = LEDC_LOW_SPEED_MODE,
-      .hpoint = 0,
-      .timer_sel = LEDC_TIMER_2};
-  ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel2));
-}
-void dc_motor_driver_init(const struct dc_motor_config *config) {
-  // Initialize the DC motor driver here
+  ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 }

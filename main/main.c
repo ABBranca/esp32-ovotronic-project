@@ -44,10 +44,9 @@ void app_main(void) {
   */
 
   // Setup
-  i2c_init();                       // Inizializza bus per comunicazione I2C
-  tmp102_init(bus_handle);          // Inizializza I2C sensore di temperatura
-  lcd1602_init(bus_handle);         // Inizializza schermo LCD1602
-  pwm_dc_motor_driver_init_timer(); // Inizializza timer per motore DC
+  i2c_init();               // Inizializza bus per comunicazione I2C
+  tmp102_init(bus_handle);  // Inizializza I2C sensore di temperatura
+  lcd1602_init(bus_handle); // Inizializza schermo LCD1602
   buzzer_init(buzzer_gpio, buzzer_default_frequency); // Inizializza cicalino
   gpio_install_isr_service(0); // Inizializza ISR per sensori di fine corsa
   limit_switch_init(
@@ -62,6 +61,10 @@ void app_main(void) {
 
   sg90_channel_init(eb_sg90_channel,
                     eb_sg90_gpio); // Inizializzo canale sg90 per egg breaker
+
+  // Inizializzo motori dc
+  pwm_dc_motor_driver_init_timer(); // Inizializzo Timer per motore DC
+                                    // planetaria.
 
   xTaskCreate(supervisor_task, "supervisor_task", 4096, NULL, 5,
               &supervisor_task_handle); // Creo il task supervisor.

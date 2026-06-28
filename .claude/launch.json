@@ -1,0 +1,26 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "build",
+      "runtimeExecutable": "idf.py",
+      "runtimeArgs": ["build"]
+    },
+    {
+      "name": "flash-monitor",
+      "runtimeExecutable": "idf.py",
+      "runtimeArgs": ["-p", "/dev/ttyACM0", "flash", "monitor"]
+    },
+    {
+      "name": "monitor",
+      "runtimeExecutable": "idf.py",
+      "runtimeArgs": ["-p", "/dev/ttyACM0", "monitor"]
+    },
+    {
+      "name": "wokwi-sim",
+      "runtimeExecutable": "wokwi-cli",
+      "runtimeArgs": ["--elf", "build/Ovotronic.elf"],
+      "port": 3333
+    }
+  ]
+}
