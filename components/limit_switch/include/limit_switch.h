@@ -1,13 +1,10 @@
 #pragma once
 
-#include "freertos/idf_additions.h"
-#include "soc/gpio_num.h"
 #include <stdbool.h>
 
-#define PAN_AT_BOTTOM_BIT (1 << 0)
-#define PAN_AT_TOP_BIT (1 << 1)
-#define BREAKER_AT_BEGIN_BIT (1 << 2)
-#define BREAKER_AT_END_BIT (1 << 3)
+#include "freertos/idf_additions.h"
+#include "soc/gpio_num.h"
+
 #define PAN_LIMIT_SWITCH_GPIO 13
 #define EB_LIMIT_SWITCH_GPIO 12
 #define LS_AXIS_COUNT 2

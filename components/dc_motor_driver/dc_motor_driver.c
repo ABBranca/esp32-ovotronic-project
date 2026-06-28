@@ -39,6 +39,9 @@ void pwm_dc_motor_driver_init(const struct dc_motor_config *config) {
 
 void dc_motor_driver_move_forward(const struct dc_motor_config *config,
                                   uint32_t speed) {
+  gpio_reset_pin(config->gpio_num_in1);
+  gpio_reset_pin(config->gpio_num_in2);
+
   ledc_set_pin(config->gpio_num_in2, LEDC_LOW_SPEED_MODE, config->channel);
 
   ledc_set_duty_and_update(LEDC_LOW_SPEED_MODE, config->channel,
@@ -49,6 +52,9 @@ void dc_motor_driver_move_forward(const struct dc_motor_config *config,
 }
 void dc_motor_driver_move_backward(const struct dc_motor_config *config,
                                    uint32_t speed) {
+  gpio_reset_pin(config->gpio_num_in1);
+  gpio_reset_pin(config->gpio_num_in2);
+
   ledc_set_pin(config->gpio_num_in1, LEDC_LOW_SPEED_MODE, config->channel);
 
   ledc_set_duty_and_update(LEDC_LOW_SPEED_MODE, config->channel,

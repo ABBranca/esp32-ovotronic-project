@@ -1,6 +1,7 @@
 #include "buzzer.h"
 #include "dc_motor_driver.h"
 #include "driver/gpio.h"
+#include "driver/ledc.h"
 #include "freertos/idf_additions.h"
 #include "hal/ledc_types.h"
 #include "i2c_bus.h"
@@ -64,7 +65,8 @@ void app_main(void) {
 
   // Inizializzo motori dc
   pwm_dc_motor_driver_init_timer(); // Inizializzo Timer per motore DC
-                                    // planetaria.
+  // planetaria.
+  ledc_fade_func_install(0);
 
   xTaskCreate(supervisor_task, "supervisor_task", 4096, NULL, 5,
               &supervisor_task_handle); // Creo il task supervisor.
