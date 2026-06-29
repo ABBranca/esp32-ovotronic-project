@@ -42,7 +42,7 @@ DC motors run full-speed via plain digital GPIO, not PWM, to stay within budget.
 | Pan DC motor (raise/lower) | DRV8870 H-bridge | IN1=GPIO 41, IN2=GPIO 42; digital (full speed) | `dc_motor` | **PLANNED** |
 | Egg-breaker DC motor | DRV8870 H-bridge | IN1=GPIO 15, IN2=GPIO 7; digital (full speed) | `dc_motor` | **PLANNED** |
 | Planetary mixer motor | DRV8870 H-bridge | IN1=GPIO 10, IN2=GPIO 11; LEDC PWM (`LEDC_TIMER_2`) | `dc_motor` | **PLANNED** |
-| Rotary encoder (KY-040) | GPIO | CLK=GPIO 18, DT=GPIO 17, SW=GPIO 21 | `encoder` | **PLANNED** |
+| Rotary encoder (KY-040 / EC11) | PCNT (CLK/DT) + GPIO (SW) | CLK=GPIO 18, DT=GPIO 17, SW=GPIO 21 | `ec11` | in progress (PCNT decode + debounced SW) |
 | Heating resistor | GPIO/PWM, thermostat-gated | regulated by [[drivers]] TMP102 reads | `heater` | **PLANNED** |
 
 ## Simulation parts

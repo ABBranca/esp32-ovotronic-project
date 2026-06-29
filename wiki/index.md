@@ -27,7 +27,7 @@ inline so the wiki stays honest about the gap between design and code:
 - **Implemented:** five drivers — `i2c_bus`, `tmp102q1`, `lcd1602`, `sg90`,
   `buzzer`.
 - **In progress:** the `limit_switch` driver (interrupt → task notification,
-  consumed by the supervisor) and the state machine (single-orchestrator design,
-  Option A — see [[state-machine]]).
-- **Planned:** the `dc_motor` (DRV8870 ×3), `encoder` (KY-040), and `heater`
-  drivers.
+  consumed by the supervisor), the `ec11` rotary-encoder driver (PCNT decode +
+  debounced SW button, scaffolded), and the state machine (single-orchestrator
+  design, Option A — see [[state-machine]]).
+- **Planned:** the `dc_motor` (DRV8870 ×3) and `heater` drivers.

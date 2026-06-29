@@ -2,6 +2,7 @@
 #include "dc_motor_driver.h"
 #include "driver/gpio.h"
 #include "driver/ledc.h"
+#include "ec11.h"
 #include "freertos/idf_additions.h"
 #include "hal/ledc_types.h"
 #include "i2c_bus.h"
@@ -34,6 +35,10 @@ static const gpio_num_t eb_sg90_gpio = 47;
 static const gpio_num_t buzzer_gpio = 48;
 static const gpio_num_t pan_limit_switch_gpio = 13;
 static const gpio_num_t eb_limit_switch_gpio = 12;
+
+const ec11_config_t ec11_cfg = {.gpio_clk = EC11_CLK_GPIO,
+                                .gpio_dt = EC11_DT_GPIO,
+                                .gpio_sw = EC11_SW_GPIO};
 
 const uint32_t buzzer_default_frequency = BUZZER_DEFAULT_FREQUENCY;
 
@@ -68,14 +73,16 @@ void app_main(void) {
   // planetaria.
   ledc_fade_func_install(0);
 
+  ec11_init(&ec11_cfg);
+
   xTaskCreate(supervisor_task, "supervisor_task", 4096, NULL, 5,
               &supervisor_task_handle); // Creo il task supervisor.
 
-  // [ ]: Ovotronic resetta la posizione verticale della padella,
+  // [x]: Ovotronic resetta la posizione verticale della padella,
   // assicurandosi che sia nella posizione più bassa tramite sensore fine
   // corsa.
 
-  // [ ]: L'utente seleziona il tipo di preparazione tra Uova Strapazzate e
+  // [x]: L'utente seleziona il tipo di preparazione tra Uova Strapazzate e
   // Frittata e prosegue
 
   // [ ]: L'utente seleziona il numero di uova da preparare e prosegue
@@ -109,4 +116,4 @@ void app_main(void) {
 
   // [ ]: Il sistema notifica l'utente della fine del processo tramite un
   // cicalino.
-};
+}

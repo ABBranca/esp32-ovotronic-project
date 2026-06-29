@@ -1,5 +1,6 @@
 #include "supervisor.h"
 #include "dc_motor_driver.h"
+#include "ec11.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_log_level.h"
@@ -36,14 +37,18 @@ static const struct dc_motor_config dc_motor_config_planetary = {
 volatile bool motion_direction[LS_AXIS_COUNT] = {
     false, false}; // false = forward, true = backward
 
+static bool mode_prep = false; // false = uova strapazzate, true = frittata.
+static bool mode_changed = false;
+char *mode_array[2] = {"Uova Strapazzate", "Frittata"};
+
 esp_err_t homing_sequence() {
 
   uint32_t pending;
 
   ESP_LOGI(TAG, "Avvio sequenza di homing");
-  lcd1602_clear();
-  lcd1602_set_cursor(0, 3);
-  lcd1602_print("HOMING...");
+  // lcd1602_clear();
+  // lcd1602_set_cursor(0, 3);
+  // lcd1602_print("HOMING...");
 
   const TickType_t start = xTaskGetTickCount();
   const TickType_t timeout = pdMS_TO_TICKS(HOMING_TIMEOUT_MS);
@@ -59,11 +64,11 @@ esp_err_t homing_sequence() {
       dc_motor_driver_brake(&dc_motor_config_eb);
       dc_motor_driver_brake(&dc_motor_config_pan);
       ESP_LOG_LEVEL(ESP_LOG_ERROR, TAG, "Homing Timed Out");
-      lcd1602_clear();
-      lcd1602_set_cursor(0, 0);
-      lcd1602_print("ERROR: Homing");
-      lcd1602_set_cursor(1, 0);
-      lcd1602_print("timed out");
+      // lcd1602_clear();
+      // lcd1602_set_cursor(0, 0);
+      // lcd1602_print("ERROR: Homing");
+      // lcd1602_set_cursor(1, 0);
+      // lcd1602_print("timed out");
       return ESP_ERR_TIMEOUT;
     }
 
@@ -92,6 +97,53 @@ esp_err_t homing_sequence() {
   // dc_motor_driver_brake(&dc_motor_config_eb);
 }
 
+void set_mode_prep(void) {
+
+  uint32_t pending;
+  lcd1602_clear();
+  lcd1602_set_cursor(0, 2);
+  lcd1602_print("Selez. Prep.");
+
+  while (true) {
+    int count = ec11_get_count();
+    ESP_LOGI(TAG, "EC11 Count: %d", count);
+    if (count % 8) {
+      if (mode_prep) {
+        mode_prep = false;
+        mode_changed = true;
+      } else {
+        mode_changed = false;
+      }
+    } else {
+      if (!mode_prep) {
+        mode_prep = true;
+        mode_changed = true;
+      } else {
+        mode_changed = false;
+      }
+    }
+
+    if (mode_changed) {
+      lcd1602_clear();
+      lcd1602_set_cursor(0, 2);
+      lcd1602_print("Selez. Prep.");
+
+      if (mode_prep) {
+        lcd1602_set_cursor(1, 2);
+        lcd1602_print("< FRITTATA >");
+      } else {
+        lcd1602_set_cursor(1, 0);
+        lcd1602_print("< UOVA STRAP. >");
+      }
+    }
+
+    xTaskNotifyWait(0, UINT32_MAX, &pending, pdMS_TO_TICKS(50));
+    if (pending & EC11_EVT_BUTTON) {
+      return;
+    }
+  }
+}
+
 void supervisor_task(void *pvParameters) {
 
   // Configurazione motori DC
@@ -111,6 +163,7 @@ void supervisor_task(void *pvParameters) {
   }
 
   limit_switch_set_notify_task_handle(supervisor_task_handle);
+  ec11_set_notify_task_handle(supervisor_task_handle);
 
   ESP_LOGI(TAG, "Supervisor task started");
 
@@ -129,6 +182,11 @@ void supervisor_task(void *pvParameters) {
     }
     vTaskDelay(pdMS_TO_TICKS(5000));
   }
+
+  set_mode_prep(); // Seleziona tra Uova Strapazzate o Frittata.
+
+  lcd1602_clear();
+  ESP_LOGI(TAG, "Utente seleziona: %s, ", mode_array[mode_prep]);
 
   while (true) {
     vTaskDelay(pdMS_TO_TICKS(2000));

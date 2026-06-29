@@ -87,6 +87,33 @@ Remaining: direction must be driven by the motor command (see [[state-machine]])
 not by toggling a flag. (The configured edge `GPIO_INTR_POSEDGE` is correct for the
 NC-in-series wiring — reaching a limit opens the switch and pulls the line HIGH.)
 
+### `ec11` — rotary encoder + push button  **IN PROGRESS** (scaffolded)
+User input for `SELECT_RECIPE` / `SELECT_COUNT` / START. KY-040 / EC11 quadrature
+knob: CLK=GPIO 18, DT=GPIO 17, button SW=GPIO 21. Component scaffolded under
+`components/ec11/` (`CMakeLists.txt` plus empty `ec11.c` / `include/ec11.h`); the
+`REQUIRES` is still empty and `ec11` is not yet listed in `main/CMakeLists.txt`.
+
+**Decided design (2026-06-29):**
+- **Quadrature decode via the PCNT peripheral** — chosen over software GPIO-ISR
+  decode. New IDF v6 driver `driver/pulse_cnt.h` (`pcnt_new_unit` /
+  `pcnt_new_channel`, edge + level actions on CLK/DT), using its **hardware glitch
+  filter** for robust debounce. `CONFIG_SOC_PCNT_SUPPORTED=y` is already set; do
+  **not** use the legacy `driver/pcnt.h` (removed in v6.x).
+- **Push button SW in the same component**, debounced like the limit switch: a
+  tiny GPIO ISR (`GPIO_INTR_NEGEDGE`) defers to the supervisor via task
+  notification, with an `esp_timer` one-shot (~10–20 ms) doing the edge→level
+  debounce. This supersedes the earlier queue (`xQueueSendFromISR`) sketch.
+- **Build deps** (`REQUIRES`): `esp_driver_pcnt esp_driver_gpio esp_timer`
+  (`freertos` implicit). Then add `ec11` to `main/CMakeLists.txt` `REQUIRES`.
+
+Indicative public API (notify pattern reused from `limit_switch` above):
+```c
+void ec11_init(const ec11_config_t *config);          // CLK / DT / SW pins
+void ec11_set_notify_task_handle(TaskHandle_t task);  // SW press → supervisor
+int  ec11_get_count(void);                            // PCNT accumulated position
+bool ec11_button_pressed(void);
+```
+
 ## Planned
 
 ### `dc_motor` — DRV8870 H-bridges  **PLANNED**
@@ -107,13 +134,6 @@ control (*Strapazzate*), so only it uses one PWM channel on its own timer
 driver exposes the blocking helpers the supervisor calls — `motor_pan_start(dir)`
 / `motor_pan_stop`, `motor_eb_*`, `motor_mixer_set_duty(...)` — and **sets
 `motion_direction[]` before moving** (the single source of truth for direction).
-
-### `encoder` — KY-040 rotary knob  **PLANNED**
-User input for `SELECT_RECIPE` / `SELECT_COUNT` / START. CLK=GPIO 18, DT=GPIO 17,
-button SW=GPIO 21. Quadrature decode (ISR on CLK reading DT, or the **PCNT**
-peripheral with its hardware glitch filter for robust debounce) produces discrete
-CW/CCW events; the button is debounced like the limit switch. Events are pushed to
-the supervisor via a queue (`xQueueSendFromISR`).
 
 ### Heater  **PLANNED**
 Heating resistor switched by GPIO/PWM, gated by `tmp102` reads in the `HEAT`

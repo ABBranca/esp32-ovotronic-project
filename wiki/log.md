@@ -69,3 +69,16 @@ POSEDGE / fail-safe (broken wire reads as "limit reached"). Architecture for bot
 extremes confirmed: 2 GPIO + direction inference (`motion_direction[]` set by the
 motor command before moving), not 4 independent GPIO; the event group stays
 optional under the single-orchestrator design (Option A).
+
+## [2026-06-29] update | Encoder driver decided: PCNT decode + same-component SW (`ec11`)
+Locked the rotary-encoder design and tied it to its real component name, `ec11`
+(scaffolded: `components/ec11/CMakeLists.txt` with an **empty `REQUIRES`**, plus
+empty `ec11.c` / `include/ec11.h`). Decisions: **quadrature A/B decoded by the
+PCNT peripheral** (IDF v6 `driver/pulse_cnt.h`, hardware glitch filter) — chosen
+over software GPIO-ISR decode; the **push-button SW lives in the same component**,
+debounced like the limit switch (GPIO `NEGEDGE` ISR → supervisor task notification
++ `esp_timer` one-shot). Build deps to fill in: `REQUIRES esp_driver_pcnt
+esp_driver_gpio esp_timer`, then add `ec11` to `main/CMakeLists.txt`. Moved the
+driver from **PLANNED** to **in progress (scaffolded)** across [[drivers]],
+[[hardware]], and [[index]]; the old `encoder` (KY-040) planned entry is superseded
+by `ec11`. Pins unchanged: CLK 18, DT 17, SW 21. Implementation left to the user.
