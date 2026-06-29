@@ -4,7 +4,6 @@
 #include "esp_attr.h"
 #include "esp_err.h"
 #include "esp_timer.h"
-#include "freertos/FreeRTOS.h"
 #include "freertos/idf_additions.h"
 #include "freertos/projdefs.h"
 #include "hal/gpio_types.h"

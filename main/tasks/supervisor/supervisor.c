@@ -12,6 +12,7 @@
 #include "portmacro.h"
 #include "soc/gpio_num.h"
 #include <stdint.h>
+#include <stdio.h>
 
 #define HOMING_TIMEOUT_MS 10000
 #define MH_MAX_RETRY 3
@@ -40,6 +41,7 @@ volatile bool motion_direction[LS_AXIS_COUNT] = {
 static bool mode_prep = false; // false = uova strapazzate, true = frittata.
 static bool mode_changed = false;
 char *mode_array[2] = {"Uova Strapazzate", "Frittata"};
+static uint8_t egg_number = 0;
 
 esp_err_t homing_sequence() {
 
@@ -97,12 +99,52 @@ esp_err_t homing_sequence() {
   // dc_motor_driver_brake(&dc_motor_config_eb);
 }
 
+bool set_cancel_conferm(void) {
+  lcd1602_clear();
+  ec11_clear_count();
+
+  uint32_t pending;
+  bool cancel_conferm = true; // false = cancel, true = conferm.
+
+  lcd1602_set_cursor(0, 2);
+  lcd1602_print(">> Conferma");
+  lcd1602_set_cursor(1, 2);
+  lcd1602_print("   Annulla");
+
+  int8_t last_detent = 0;
+
+  for (;;) {
+    int8_t detent = ec11_get_count() / 4;
+    int8_t delta = detent - last_detent;
+    if (delta) {
+      cancel_conferm = !cancel_conferm;
+      if (cancel_conferm) {
+        lcd1602_set_cursor(0, 2);
+        lcd1602_print(">> Conferma");
+        lcd1602_set_cursor(1, 2);
+        lcd1602_print("   Annulla");
+      } else {
+        lcd1602_set_cursor(0, 2);
+        lcd1602_print("   Conferma");
+        lcd1602_set_cursor(1, 2);
+        lcd1602_print(">> Annulla");
+      }
+      last_detent = detent;
+    }
+    xTaskNotifyWait(0, UINT32_MAX, &pending, pdMS_TO_TICKS(20));
+    if (pending & EC11_EVT_BUTTON) {
+      return cancel_conferm;
+    }
+  }
+}
+
 void set_mode_prep(void) {
 
   uint32_t pending;
   lcd1602_clear();
   lcd1602_set_cursor(0, 2);
   lcd1602_print("Selez. Prep.");
+  ec11_clear_count();
 
   while (true) {
     int count = ec11_get_count();
@@ -144,6 +186,48 @@ void set_mode_prep(void) {
   }
 }
 
+void set_egg_number(void) {
+  lcd1602_clear();
+  lcd1602_set_cursor(0, 0);
+  lcd1602_print("Selez. Num. Uova");
+  lcd1602_set_cursor(1, 6);
+  lcd1602_print("< 1 >");
+
+  ec11_clear_count();
+  egg_number = 1;
+  uint32_t pending;
+  int8_t last_detent = 0;
+
+  for (;;) {
+    int8_t detent = ec11_get_count() / 4;
+    int8_t delta = detent - last_detent;
+    if (delta) {
+      uint8_t e = egg_number + delta;
+      if (e < 1) {
+        e = 1;
+      }
+      if (e > 6) {
+        e = 6;
+      }
+      egg_number = e;
+      last_detent = detent;
+
+      lcd1602_clear();
+      lcd1602_set_cursor(0, 0);
+      lcd1602_print("Selez. Num. Uova");
+      char buf[8];
+      snprintf(buf, sizeof(buf), "< %d >", egg_number);
+      lcd1602_set_cursor(1, 6);
+      lcd1602_print(buf);
+    }
+
+    xTaskNotifyWait(0, UINT32_MAX, &pending, pdMS_TO_TICKS(20));
+    if (pending & EC11_EVT_BUTTON) {
+      break;
+    }
+  }
+}
+
 void supervisor_task(void *pvParameters) {
 
   // Configurazione motori DC
@@ -167,28 +251,44 @@ void supervisor_task(void *pvParameters) {
 
   ESP_LOGI(TAG, "Supervisor task started");
 
-  int attempts = 0;
-  while (homing_sequence() != ESP_OK) {
-    if (++attempts >= MH_MAX_RETRY) {
-      // FAULT LATCHED: motori fermi, LCD errore, halt
-      lcd1602_clear();
-      lcd1602_set_cursor(0, 0);
-      lcd1602_print("PANIC: MOTOR");
-      lcd1602_set_cursor(1, 0);
-      lcd1602_print("FAULT!");
-      ESP_LOGE(TAG, "Homing fault: %d tentativi falliti", attempts);
-      for (;;)
-        vTaskDelay(pdMS_TO_TICKS(1000)); // o stato fault dedicato
-    }
-    vTaskDelay(pdMS_TO_TICKS(5000));
-  }
-
-  set_mode_prep(); // Seleziona tra Uova Strapazzate o Frittata.
-
-  lcd1602_clear();
-  ESP_LOGI(TAG, "Utente seleziona: %s, ", mode_array[mode_prep]);
-
   while (true) {
+
+    // [x]: Ovotronic resetta la posizione verticale della padella,
+    // assicurandosi che sia nella posizione più bassa tramite sensore fine
+    // corsa.
+
+    int attempts = 0;
+    while (homing_sequence() != ESP_OK) {
+      if (++attempts >= MH_MAX_RETRY) {
+        // FAULT LATCHED: motori fermi, LCD errore, halt
+        lcd1602_clear();
+        lcd1602_set_cursor(0, 0);
+        lcd1602_print("PANIC: MOTOR");
+        lcd1602_set_cursor(1, 0);
+        lcd1602_print("FAULT!");
+        ESP_LOGE(TAG, "Homing fault: %d tentativi falliti", attempts);
+        for (;;)
+          vTaskDelay(pdMS_TO_TICKS(1000)); // o stato fault dedicato
+      }
+      vTaskDelay(pdMS_TO_TICKS(5000));
+    }
+
+    // [x]: L'utente seleziona il tipo di preparazione tra Uova Strapazzate e
+    // Frittata e prosegue
+
+    set_mode_prep(); // Seleziona tra Uova Strapazzate o Frittata.
+    ESP_LOGI(TAG, "Utente seleziona: %s", mode_array[mode_prep]);
+
+    // [x]: L'utente seleziona il numero di uova da preparare e prosegue
+
+    set_egg_number();
+    if (!set_cancel_conferm()) {
+      continue;
+    } else {
+      // break;
+      ESP_LOGI(TAG, "Utente seleziona %d uova", egg_number);
+    }
+
     vTaskDelay(pdMS_TO_TICKS(2000));
   }
 }
