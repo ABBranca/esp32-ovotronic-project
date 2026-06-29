@@ -20,6 +20,13 @@
 TaskHandle_t supervisor_task_handle = NULL;
 static const char *TAG = "Supervisor";
 
+enum state_enum_t {
+  HOMING_SEQUENCE,
+  MODE_SELECTION,
+  EGG_NUMBER_SELECTION,
+  PRE_COOKING,
+};
+
 static const struct dc_motor_config dc_motor_config_pan = {
     .gpio_num_in1 = GPIO_NUM_41,
     .gpio_num_in2 = GPIO_NUM_42,
@@ -88,9 +95,9 @@ esp_err_t homing_sequence() {
     if (limit_switch_is_at_limit(LS_AXIS_PAN) &&
         limit_switch_is_at_limit(LS_AXIS_EB)) {
       ESP_LOGI(TAG, "Sequenza di homing completata");
-      lcd1602_clear();
-      lcd1602_set_cursor(0, 3);
-      lcd1602_print("PRONTO!");
+      // lcd1602_clear();
+      // lcd1602_set_cursor(0, 3);
+      // lcd1602_print("PRONTO!");
       return ESP_OK;
     }
   }
@@ -109,7 +116,7 @@ bool set_cancel_conferm(void) {
   lcd1602_set_cursor(0, 2);
   lcd1602_print(">> Conferma");
   lcd1602_set_cursor(1, 2);
-  lcd1602_print("   Annulla");
+  lcd1602_print("   Indietro");
 
   int8_t last_detent = 0;
 
@@ -122,12 +129,12 @@ bool set_cancel_conferm(void) {
         lcd1602_set_cursor(0, 2);
         lcd1602_print(">> Conferma");
         lcd1602_set_cursor(1, 2);
-        lcd1602_print("   Annulla");
+        lcd1602_print("   Indietro");
       } else {
         lcd1602_set_cursor(0, 2);
         lcd1602_print("   Conferma");
         lcd1602_set_cursor(1, 2);
-        lcd1602_print(">> Annulla");
+        lcd1602_print(">> Indietro");
       }
       last_detent = detent;
     }
@@ -251,44 +258,60 @@ void supervisor_task(void *pvParameters) {
 
   ESP_LOGI(TAG, "Supervisor task started");
 
+  enum state_enum_t current_state = HOMING_SEQUENCE;
+
   while (true) {
 
-    // [x]: Ovotronic resetta la posizione verticale della padella,
-    // assicurandosi che sia nella posizione più bassa tramite sensore fine
-    // corsa.
-
-    int attempts = 0;
-    while (homing_sequence() != ESP_OK) {
-      if (++attempts >= MH_MAX_RETRY) {
-        // FAULT LATCHED: motori fermi, LCD errore, halt
-        lcd1602_clear();
-        lcd1602_set_cursor(0, 0);
-        lcd1602_print("PANIC: MOTOR");
-        lcd1602_set_cursor(1, 0);
-        lcd1602_print("FAULT!");
-        ESP_LOGE(TAG, "Homing fault: %d tentativi falliti", attempts);
-        for (;;)
-          vTaskDelay(pdMS_TO_TICKS(1000)); // o stato fault dedicato
+    switch (current_state) {
+    case HOMING_SEQUENCE:
+      // [x]: Ovotronic resetta la posizione verticale della padella,
+      // assicurandosi che sia nella posizione più bassa tramite sensore fine
+      // corsa.
+      int attempts = 0;
+      while (homing_sequence() != ESP_OK) {
+        if (++attempts >= MH_MAX_RETRY) {
+          // FAULT LATCHED: motori fermi, LCD errore, halt
+          lcd1602_clear();
+          lcd1602_set_cursor(0, 0);
+          lcd1602_print("PANIC: MOTOR");
+          lcd1602_set_cursor(1, 0);
+          lcd1602_print("FAULT!");
+          ESP_LOGE(TAG, "Homing fault: %d tentativi falliti", attempts);
+          for (;;)
+            vTaskDelay(pdMS_TO_TICKS(1000)); // o stato fault dedicato
+        }
+        vTaskDelay(pdMS_TO_TICKS(5000));
       }
-      vTaskDelay(pdMS_TO_TICKS(5000));
+      current_state = MODE_SELECTION;
+      break;
+    case MODE_SELECTION:
+      // [x]: L'utente seleziona il tipo di preparazione tra Uova Strapazzate e
+      // Frittata e prosegue
+
+      set_mode_prep(); // Seleziona tra Uova Strapazzate o Frittata.
+      ESP_LOGI(TAG, "Utente seleziona: %s", mode_array[mode_prep]);
+      current_state = EGG_NUMBER_SELECTION;
+      break;
+
+    case EGG_NUMBER_SELECTION:
+      // [x]: L'utente seleziona il numero di uova da preparare e prosegue
+
+      set_egg_number();
+      if (!set_cancel_conferm()) {
+        current_state = EGG_NUMBER_SELECTION;
+      } else {
+        // break;
+        ESP_LOGI(TAG, "Utente seleziona %d uova", egg_number);
+        current_state = PRE_COOKING;
+      }
+
+      break;
+
+    case PRE_COOKING:
+      break;
+
+    default:
+      break;
     }
-
-    // [x]: L'utente seleziona il tipo di preparazione tra Uova Strapazzate e
-    // Frittata e prosegue
-
-    set_mode_prep(); // Seleziona tra Uova Strapazzate o Frittata.
-    ESP_LOGI(TAG, "Utente seleziona: %s", mode_array[mode_prep]);
-
-    // [x]: L'utente seleziona il numero di uova da preparare e prosegue
-
-    set_egg_number();
-    if (!set_cancel_conferm()) {
-      continue;
-    } else {
-      // break;
-      ESP_LOGI(TAG, "Utente seleziona %d uova", egg_number);
-    }
-
-    vTaskDelay(pdMS_TO_TICKS(2000));
   }
 }
