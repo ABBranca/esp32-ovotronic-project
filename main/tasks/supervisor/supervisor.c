@@ -11,6 +11,7 @@
 #include "limit_switch.h"
 #include "portmacro.h"
 #include "soc/gpio_num.h"
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -25,6 +26,7 @@ enum state_enum_t {
   MODE_SELECTION,
   EGG_NUMBER_SELECTION,
   PRE_COOKING,
+  COOKING_SEQUENCE,
 };
 
 static const struct dc_motor_config dc_motor_config_pan = {
@@ -61,6 +63,27 @@ esp_err_t homing_sequence() {
 
   const TickType_t start = xTaskGetTickCount();
   const TickType_t timeout = pdMS_TO_TICKS(HOMING_TIMEOUT_MS);
+
+  dc_motor_driver_move_forward(&dc_motor_config_eb, 2048);
+  motion_direction[LS_AXIS_EB] = true;
+
+  dc_motor_driver_move_forward(&dc_motor_config_pan, 2048);
+  motion_direction[LS_AXIS_PAN] = true;
+
+  vTaskDelay(pdMS_TO_TICKS(800));
+
+  dc_motor_driver_brake(&dc_motor_config_eb);
+  dc_motor_driver_brake(&dc_motor_config_pan);
+
+  vTaskDelay(pdMS_TO_TICKS(30)); // debounce dopo il brake
+  if (limit_switch_is_at_limit(LS_AXIS_PAN) ||
+      limit_switch_is_at_limit(LS_AXIS_EB)) {
+    ESP_LOGE(TAG,
+             "Finecorsa ancora attivo dopo escursione: sensore/asse guasto");
+    return ESP_FAIL;
+  }
+
+  vTaskDelay(pdMS_TO_TICKS(500));
 
   dc_motor_driver_move_backward(&dc_motor_config_pan, 2048);
   motion_direction[LS_AXIS_PAN] = true;
@@ -235,6 +258,79 @@ void set_egg_number(void) {
   }
 }
 
+void pre_cooking_routine(void) {
+  uint32_t pending;
+
+  ESP_LOGI(TAG, "Pre-Cooking Routine for %s - %d uova", mode_array[mode_prep],
+           egg_number);
+
+  size_t offset = 0;
+  lcd1602_clear();
+
+  lcd1602_set_cursor(1, 0);
+  lcd1602_print("Premi: Continua");
+
+  for (;;) { // Aspetta che l'utente prema il knob prima di procedere.
+    const char message[] =
+        "Inserisci supplementi nel dispenser superiore         ";
+    lcd1602_step_marquee(message, sizeof(message) - 1, offset);
+    offset = (offset + 1) % sizeof(message);
+    xTaskNotifyWait(0, UINT32_MAX, &pending, pdMS_TO_TICKS(140));
+    if (pending & EC11_EVT_BUTTON) {
+      break;
+    }
+  }
+
+  lcd1602_clear();
+
+  struct recipe {
+    uint8_t parmisan;
+    uint8_t salt;
+    uint8_t milk;
+  };
+
+  lcd1602_clear();
+
+  if (mode_prep) {
+    struct recipe ricetta_frittata = {
+        .parmisan = 10 * egg_number, // Quantita' in grammi
+        .salt = 1 * egg_number,
+    };
+
+    char buf[24];
+    snprintf(buf, sizeof(buf), "Parmigiano: %d g", ricetta_frittata.parmisan);
+    lcd1602_set_cursor(1, 0);
+    lcd1602_print("Premi: Continua");
+
+    offset = 0;
+    pending = 0;
+    for (;;) {
+      lcd1602_step_marquee(buf, sizeof(buf) - 1, offset);
+      offset = (offset + 1) % (sizeof(buf));
+      xTaskNotifyWait(0, UINT32_MAX, &pending, pdMS_TO_TICKS(140));
+      if (pending & EC11_EVT_BUTTON) {
+        break;
+      }
+    }
+
+    lcd1602_clear();
+    snprintf(buf, sizeof(buf), "Sale: %d g", ricetta_frittata.salt);
+    lcd1602_set_cursor(1, 0);
+    lcd1602_print("Premi: Continua");
+
+    for (;;) {
+      lcd1602_step_marquee(buf, sizeof(buf) - 1, offset);
+      offset = (offset + 1) % (sizeof(buf));
+      xTaskNotifyWait(0, UINT32_MAX, &pending, pdMS_TO_TICKS(140));
+      if (pending & EC11_EVT_BUTTON) {
+        break;
+      }
+    }
+
+  } else {
+  }
+}
+
 void supervisor_task(void *pvParameters) {
 
   // Configurazione motori DC
@@ -298,7 +394,7 @@ void supervisor_task(void *pvParameters) {
 
       set_egg_number();
       if (!set_cancel_conferm()) {
-        current_state = EGG_NUMBER_SELECTION;
+        current_state = MODE_SELECTION;
       } else {
         // break;
         ESP_LOGI(TAG, "Utente seleziona %d uova", egg_number);
@@ -308,6 +404,13 @@ void supervisor_task(void *pvParameters) {
       break;
 
     case PRE_COOKING:
+      pre_cooking_routine();
+
+      current_state = COOKING_SEQUENCE;
+
+      break;
+
+    case COOKING_SEQUENCE:
       break;
 
     default:

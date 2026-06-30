@@ -5,7 +5,9 @@
 #include "freertos/idf_additions.h"
 #include "hal/i2c_types.h"
 #include "portmacro.h"
+#include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 i2c_device_config_t lcd1602_cfg = {
     .dev_addr_length = I2C_ADDR_BIT_LEN_7,
@@ -93,4 +95,29 @@ esp_err_t lcd1602_clear() {
   lcd_send_byte(0x01, 0);
   vTaskDelay(20 / portTICK_PERIOD_MS);
   return ESP_OK;
+}
+
+void lcd1602_step_marquee(const char *text, size_t lenght, size_t offset) {
+  // Non scorrere mai oltre la lunghezza reale della stringa: cosi' un eventuale
+  // '\0' o byte non inizializzati (es. buffer snprintf piu' grandi del testo)
+  // non finiscono nella finestra. 'lenght' resta un limite massimo opzionale.
+  size_t real = strlen(text);
+  if (lenght == 0 || lenght > real) {
+    lenght = real;
+  }
+
+  char window[LCD_CHAR_WIDTH + 1];
+  for (uint8_t i = 0; i < LCD_CHAR_WIDTH; i++) {
+    if (lenght <= LCD_CHAR_WIDTH) {
+      // Il testo ci sta tutto nella riga: nessuno scorrimento, riempo con spazi.
+      window[i] = (i < lenght) ? text[i] : ' ';
+    } else {
+      // Testo piu' lungo della riga: finestra scorrevole circolare.
+      window[i] = text[(offset + i) % lenght];
+    }
+  }
+  window[LCD_CHAR_WIDTH] = '\0';
+
+  lcd1602_set_cursor(0, 0); // riga 0 = prima linea
+  lcd1602_print(window);
 }
