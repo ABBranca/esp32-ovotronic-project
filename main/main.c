@@ -78,10 +78,6 @@ void app_main(void) {
   xTaskCreate(supervisor_task, "supervisor_task", 4096, NULL, 5,
               &supervisor_task_handle); // Creo il task supervisor.
 
-  // [ ]: Ovotronic comunica all'utente tramite lo schermo i quantitativi in
-  // grammi di supplementi da aggiungere all'imbuto superiore per il numero di
-  // uova selezionate e attende il segnale di avvio da parte dell'utente.
-
   // [ ]: Dopo il via libera dell'utente, Ovotronic rompe le uova e convoglia
   // i supplementi nella padella tramite attuazione del servomotore SG90
   // dedicato.

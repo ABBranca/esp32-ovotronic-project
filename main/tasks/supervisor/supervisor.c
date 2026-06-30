@@ -287,6 +287,7 @@ void pre_cooking_routine(void) {
     uint8_t parmisan;
     uint8_t salt;
     uint8_t milk;
+    uint8_t butter; // Grammi di burro (ramo uova strapazzate)
   };
 
   lcd1602_clear();
@@ -318,6 +319,7 @@ void pre_cooking_routine(void) {
     lcd1602_set_cursor(1, 0);
     lcd1602_print("Premi: Continua");
 
+    offset = 0;
     for (;;) {
       lcd1602_step_marquee(buf, sizeof(buf) - 1, offset);
       offset = (offset + 1) % (sizeof(buf));
@@ -327,7 +329,137 @@ void pre_cooking_routine(void) {
       }
     }
 
+    lcd1602_clear();
+    snprintf(buf, sizeof(buf), "Pepe Nero: qb");
+    lcd1602_set_cursor(1, 0);
+    lcd1602_print("Premi: Continua");
+
+    offset = 0;
+    for (;;) {
+      lcd1602_step_marquee(buf, sizeof(buf) - 1, offset);
+      offset = (offset + 1) % (sizeof(buf));
+      xTaskNotifyWait(0, UINT32_MAX, &pending, pdMS_TO_TICKS(140));
+      if (pending & EC11_EVT_BUTTON) {
+        break;
+      }
+    }
+
+    lcd1602_clear();
+    lcd1602_set_cursor(1, 0);
+    lcd1602_print("Premi: Continua");
+
+    offset = 0;
+    for (;;) {
+      const char message[] =
+          "Versa circa due chucchiai di olio EVO nella padella               ";
+      lcd1602_step_marquee(message, sizeof(message) - 1, offset);
+      offset = (offset + 1) % (sizeof(message));
+      xTaskNotifyWait(0, UINT32_MAX, &pending, pdMS_TO_TICKS(140));
+      if (pending & EC11_EVT_BUTTON) {
+        break;
+      }
+    }
+
+    lcd1602_clear();
+    lcd1602_set_cursor(1, 0);
+    lcd1602_print("Premi: Continua");
+
+    offset = 0;
+    for (;;) {
+      const char message[] = "Aggiungi ingredienti extra a piacere nel "
+                             "dispenser superiore             ";
+      lcd1602_step_marquee(message, sizeof(message) - 1, offset);
+      offset = (offset + 1) % (sizeof(message));
+      xTaskNotifyWait(0, UINT32_MAX, &pending, pdMS_TO_TICKS(140));
+      if (pending & EC11_EVT_BUTTON) {
+        return;
+      }
+    }
+
   } else {
+    struct recipe ricetta_strapazzate = {
+        .milk = 23 * egg_number,   // Quantita' in ml (base 70 ml / 3 uova)
+        .butter = 13 * egg_number, // Quantita' in grammi (base 40 g / 3 uova)
+    };
+
+    char buf[64];
+    snprintf(buf, sizeof(buf), "Latte: %d ml", ricetta_strapazzate.milk);
+    lcd1602_set_cursor(1, 0);
+    lcd1602_print("Premi: Continua");
+
+    offset = 0;
+    pending = 0;
+    for (;;) {
+      lcd1602_step_marquee(buf, sizeof(buf) - 1, offset);
+      offset = (offset + 1) % (sizeof(buf));
+      xTaskNotifyWait(0, UINT32_MAX, &pending, pdMS_TO_TICKS(140));
+      if (pending & EC11_EVT_BUTTON) {
+        break;
+      }
+    }
+
+    lcd1602_clear();
+    snprintf(buf, sizeof(buf), "Sale: qb");
+    lcd1602_set_cursor(1, 0);
+    lcd1602_print("Premi: Continua");
+
+    offset = 0;
+    for (;;) {
+      lcd1602_step_marquee(buf, sizeof(buf) - 1, offset);
+      offset = (offset + 1) % (sizeof(buf));
+      xTaskNotifyWait(0, UINT32_MAX, &pending, pdMS_TO_TICKS(140));
+      if (pending & EC11_EVT_BUTTON) {
+        break;
+      }
+    }
+
+    lcd1602_clear();
+    snprintf(buf, sizeof(buf), "Pepe Nero: qb");
+    lcd1602_set_cursor(1, 0);
+    lcd1602_print("Premi: Continua");
+
+    offset = 0;
+    for (;;) {
+      lcd1602_step_marquee(buf, sizeof(buf) - 1, offset);
+      offset = (offset + 1) % (sizeof(buf));
+      xTaskNotifyWait(0, UINT32_MAX, &pending, pdMS_TO_TICKS(140));
+      if (pending & EC11_EVT_BUTTON) {
+        break;
+      }
+    }
+
+    lcd1602_clear();
+    snprintf(buf, sizeof(buf),
+             "Imburra la padella con %d g di burro                ",
+             ricetta_strapazzate.butter);
+    lcd1602_set_cursor(1, 0);
+    lcd1602_print("Premi: Continua");
+
+    offset = 0;
+    for (;;) {
+      lcd1602_step_marquee(buf, sizeof(buf) - 1, offset);
+      offset = (offset + 1) % (sizeof(buf));
+      xTaskNotifyWait(0, UINT32_MAX, &pending, pdMS_TO_TICKS(140));
+      if (pending & EC11_EVT_BUTTON) {
+        break;
+      }
+    }
+
+    lcd1602_clear();
+    lcd1602_set_cursor(1, 0);
+    lcd1602_print("Premi: Continua");
+
+    offset = 0;
+    for (;;) {
+      const char message[] = "Aggiungi ingredienti extra a piacere nel "
+                             "dispenser superiore             ";
+      lcd1602_step_marquee(message, sizeof(message) - 1, offset);
+      offset = (offset + 1) % (sizeof(message));
+      xTaskNotifyWait(0, UINT32_MAX, &pending, pdMS_TO_TICKS(140));
+      if (pending & EC11_EVT_BUTTON) {
+        return;
+      }
+    }
   }
 }
 
@@ -404,9 +536,18 @@ void supervisor_task(void *pvParameters) {
       break;
 
     case PRE_COOKING:
+
+      // [ ]: Ovotronic comunica all'utente tramite lo schermo i quantitativi in
+      // grammi di supplementi da aggiungere all'imbuto superiore per il numero
+      // di uova selezionate e attende il segnale di avvio da parte dell'utente.
+
       pre_cooking_routine();
 
-      current_state = COOKING_SEQUENCE;
+      if (!set_cancel_conferm()) {
+        current_state = MODE_SELECTION;
+      } else {
+        current_state = COOKING_SEQUENCE;
+      }
 
       break;
 
