@@ -28,8 +28,8 @@ header.
 
 */
 
-static const ledc_channel_t ds_sg90_channel = LEDC_CHANNEL_0;
-static const ledc_channel_t eb_sg90_channel = LEDC_CHANNEL_1;
+const ledc_channel_t ds_sg90_channel = LEDC_CHANNEL_0;
+const ledc_channel_t eb_sg90_channel = LEDC_CHANNEL_1;
 static const gpio_num_t ds_sg90_gpio = 2;
 static const gpio_num_t eb_sg90_gpio = 47;
 static const gpio_num_t buzzer_gpio = 48;
@@ -77,10 +77,6 @@ void app_main(void) {
 
   xTaskCreate(supervisor_task, "supervisor_task", 4096, NULL, 5,
               &supervisor_task_handle); // Creo il task supervisor.
-
-  // [ ]: Dopo il via libera dell'utente, Ovotronic rompe le uova e convoglia
-  // i supplementi nella padella tramite attuazione del servomotore SG90
-  // dedicato.
 
   // [ ]: La padella si alza fino a fine corsa.
 

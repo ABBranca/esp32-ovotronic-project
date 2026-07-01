@@ -10,6 +10,7 @@
 #include "lcd1602.h"
 #include "limit_switch.h"
 #include "portmacro.h"
+#include "sg90.h"
 #include "soc/gpio_num.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -17,6 +18,7 @@
 
 #define HOMING_TIMEOUT_MS 10000
 #define MH_MAX_RETRY 3
+#define SERVO_DIVIDER 100
 
 TaskHandle_t supervisor_task_handle = NULL;
 static const char *TAG = "Supervisor";
@@ -44,9 +46,6 @@ static const struct dc_motor_config dc_motor_config_planetary = {
     .gpio_num_in2 = GPIO_NUM_11,
     .channel = LEDC_CHANNEL_5};
 
-volatile bool motion_direction[LS_AXIS_COUNT] = {
-    false, false}; // false = forward, true = backward
-
 static bool mode_prep = false; // false = uova strapazzate, true = frittata.
 static bool mode_changed = false;
 char *mode_array[2] = {"Uova Strapazzate", "Frittata"};
@@ -65,10 +64,8 @@ esp_err_t homing_sequence() {
   const TickType_t timeout = pdMS_TO_TICKS(HOMING_TIMEOUT_MS);
 
   dc_motor_driver_move_forward(&dc_motor_config_eb, 2048);
-  motion_direction[LS_AXIS_EB] = true;
 
   dc_motor_driver_move_forward(&dc_motor_config_pan, 2048);
-  motion_direction[LS_AXIS_PAN] = true;
 
   vTaskDelay(pdMS_TO_TICKS(800));
 
@@ -86,9 +83,7 @@ esp_err_t homing_sequence() {
   vTaskDelay(pdMS_TO_TICKS(500));
 
   dc_motor_driver_move_backward(&dc_motor_config_pan, 2048);
-  motion_direction[LS_AXIS_PAN] = true;
   dc_motor_driver_move_backward(&dc_motor_config_eb, 2048);
-  motion_direction[LS_AXIS_EB] = true;
 
   for (;;) {
     TickType_t elapsed = xTaskGetTickCount() - start;
@@ -463,6 +458,121 @@ void pre_cooking_routine(void) {
   }
 }
 
+// Esegue una corsa dell'egg breaker fino al finecorsa opposto a quello di
+// partenza. I due finecorsa dell'asse condividono la stessa linea GPIO, quindi
+// il livello da solo non distingue forward da home: si attende prima il
+// rilascio del finecorsa iniziale (linea LOW) e poi l'arrivo su quello opposto.
+static esp_err_t eb_run_to_limit(bool forward, TickType_t timeout) {
+  uint32_t pending;
+  const TickType_t start = xTaskGetTickCount();
+
+  // Scarta eventuali fronti (rimbalzi) rimasti latched dalla corsa precedente.
+  xTaskNotifyStateClear(NULL);
+  ulTaskNotifyValueClear(NULL, UINT32_MAX);
+
+  if (forward) {
+    dc_motor_driver_move_forward(&dc_motor_config_eb, 2048);
+  } else {
+    dc_motor_driver_move_backward(&dc_motor_config_eb, 2048);
+  }
+
+  // Fase A: attendi il rilascio del finecorsa di partenza (linea LOW).
+  // L'ISR e' POSEDGE-only: il rilascio non genera notifica, quindi polling.
+  while (limit_switch_is_at_limit(LS_AXIS_EB)) {
+    if (xTaskGetTickCount() - start >= timeout) {
+      dc_motor_driver_brake(&dc_motor_config_eb);
+      ESP_LOGE(TAG, "Egg Breaker: finecorsa di partenza non rilasciato");
+      return ESP_FAIL;
+    }
+    vTaskDelay(pdMS_TO_TICKS(30));
+  }
+
+  // Fase B: attendi l'arrivo sul finecorsa opposto (linea di nuovo HIGH).
+  for (;;) {
+    TickType_t elapsed = xTaskGetTickCount() - start;
+    if (elapsed >= timeout) {
+      dc_motor_driver_brake(&dc_motor_config_eb);
+      ESP_LOGE(TAG, "Egg Breaker timed out!");
+      return ESP_FAIL;
+    }
+
+    xTaskNotifyWait(0, UINT32_MAX, &pending, timeout - elapsed);
+    vTaskDelay(pdMS_TO_TICKS(30)); // debounce
+
+    if (limit_switch_is_at_limit(LS_AXIS_EB)) {
+      dc_motor_driver_brake(&dc_motor_config_eb);
+      break;
+    }
+  }
+
+  return ESP_OK;
+}
+
+esp_err_t cooking_routine(void) {
+  TickType_t start = xTaskGetTickCount(), timeout = pdMS_TO_TICKS(10000);
+  uint32_t pending;
+
+  ESP_LOGI(TAG, "Inizio cooking-routine");
+  lcd1602_clear();
+  lcd1602_set_cursor(1, 0);
+  lcd1602_print("Cottura: 0%");
+
+  dc_motor_driver_move_forward(&dc_motor_config_pan, 2048);
+
+  for (;;) {
+    TickType_t elapsed = xTaskGetTickCount() - start;
+
+    if (elapsed >= timeout) {
+      dc_motor_driver_brake(&dc_motor_config_pan);
+      ESP_LOGE(TAG, "Pan movement timed out.");
+      return ESP_FAIL;
+    }
+
+    xTaskNotifyWait(0, UINT32_MAX, &pending, timeout - elapsed);
+
+    if (limit_switch_is_at_limit(LS_AXIS_PAN)) {
+      dc_motor_driver_brake(&dc_motor_config_pan);
+      break;
+    }
+  }
+
+  vTaskDelay(pdMS_TO_TICKS(1000));
+
+  for (uint8_t j = 0; j < egg_number; j++) {
+
+    ESP_LOGI(TAG, "Rottura uovo numero %d", j + 1);
+
+    for (uint8_t i = 1; i <= SERVO_DIVIDER; i++) {
+      sg90_set_angle(eb_sg90_channel, 120.0f * (float)i / SERVO_DIVIDER);
+      vTaskDelay(pdMS_TO_TICKS(30));
+    }
+
+    // A questo punto l'uovo e' caduto e il guscio si e' rotto
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    // Prosegue la sequenza di rottura dell'uovo
+
+    for (int8_t i = SERVO_DIVIDER; i >= 0; i--) {
+      sg90_set_angle(eb_sg90_channel, 120.0f * (float)i / SERVO_DIVIDER);
+      vTaskDelay(pdMS_TO_TICKS(30));
+    }
+
+    if (eb_run_to_limit(true, timeout) != ESP_OK) {
+      return ESP_FAIL;
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    if (eb_run_to_limit(false, timeout) != ESP_OK) {
+      return ESP_FAIL;
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(800));
+  }
+
+  return ESP_OK;
+}
+
 void supervisor_task(void *pvParameters) {
 
   // Configurazione motori DC
@@ -537,7 +647,7 @@ void supervisor_task(void *pvParameters) {
 
     case PRE_COOKING:
 
-      // [ ]: Ovotronic comunica all'utente tramite lo schermo i quantitativi in
+      // [x]: Ovotronic comunica all'utente tramite lo schermo i quantitativi in
       // grammi di supplementi da aggiungere all'imbuto superiore per il numero
       // di uova selezionate e attende il segnale di avvio da parte dell'utente.
 
@@ -552,6 +662,17 @@ void supervisor_task(void *pvParameters) {
       break;
 
     case COOKING_SEQUENCE:
+
+      // [ ]: Dopo il via libera dell'utente, Ovotronic rompe le uova e
+      // convoglia
+      // i supplementi nella padella tramite attuazione del servomotore SG90
+      // dedicato.
+
+      cooking_routine();
+
+      if (!set_cancel_conferm()) {
+        current_state = MODE_SELECTION;
+      }
       break;
 
     default:
